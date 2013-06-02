@@ -33,11 +33,11 @@ var TK = (
 '<span '+
 'style="vertical-align: -0.4pt">T</span><span '+
 'style="font-weight: bold">&Aring;</span>G<span '+
-'style="display: inline-block; transform: rotate(8deg)">E</span><span '+
+'style="display: inline-block; transform: rotate(8deg); -webkit-transform: rotate(8deg)">E</span><span '+
 'style="vertical-align: -0.6pt">K</span><span '+
 'style="vertical-align: 0.2pt; font-weight: bold">A</span><span '+
 'style="vertical-align: -0.6pt">M</span><span '+
-'style="display: inline-block; transform: rotate(-8deg); font-weight: bold">M</span>ER');
+'style="display: inline-block; transform: rotate(-8deg); -webkit-transform: rotate(-8deg); font-weight: bold">M</span>ER');
 var TKET = TK + '<span style="vertical-align: 0.6pt">ET</span>';
 
 function insert_TK_html(h) {
