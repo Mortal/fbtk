@@ -1,6 +1,7 @@
+// vim:set fileencoding=utf-8:
 // Author: Mathias Rav
 // Date: May 22, 2013
-// rød grød med fløde æ ø å
+// encoding test: rød grød med fløde æ ø å
 
 function year_prefix(year) {
 	year = 2012 - year;
@@ -40,6 +41,9 @@ var TK = (
 'style="display: inline-block; transform: rotate(-8deg); -webkit-transform: rotate(-8deg); font-weight: bold">M</span>ER');
 var TKET = TK + '<span style="vertical-align: 0.6pt">ET</span>';
 
+///////////////////////////////////////////////////////////////////////////////
+// Callback generator for add_alias.
+///////////////////////////////////////////////////////////////////////////////
 function insert_TK_html(h) {
 	return function (n, orig_string) {
 		var replaced = document.createElement('span');
@@ -52,6 +56,15 @@ function insert_TK_html(h) {
 }
 
 var aliases = {'replacements': {}, 'targets': []};
+
+///////////////////////////////////////////////////////////////////////////////
+// Add a text replacement.
+//
+// `source` is a string to watch for in DOM text nodes.
+// Whenever `source` is found, the function `destination` is invoked with two
+// parameters: the insertion point of the replacement text, and the original
+// replaced text.
+///////////////////////////////////////////////////////////////////////////////
 function add_alias(source, destination) {
 	aliases.targets.push(source);
 	aliases.replacements[source] = destination;
@@ -65,6 +78,9 @@ function compute_alias_regexp() {
 }
 compute_alias_regexp();
 
+///////////////////////////////////////////////////////////////////////////////
+// Parse input line to an object.
+///////////////////////////////////////////////////////////////////////////////
 function parse_alias(line) {
 	var prefixed = /^(\d+) +([^ ]+) +(.*)/.exec(line);
 	if (prefixed) {
@@ -80,6 +96,9 @@ function parse_alias(line) {
 	return null;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// Parse input lines, sending objects to a callback function.
+///////////////////////////////////////////////////////////////////////////////
 function parse_aliases(input, cb) {
 	var lineMatch;
 	var re = /^.+$/mg;
@@ -90,6 +109,9 @@ function parse_aliases(input, cb) {
 	}
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// Given a parsed input line object, produce the fancy unicode text to insert.
+///////////////////////////////////////////////////////////////////////////////
 function make_title(o) {
 	var title = o.title;
 	var fancy = title_bling(o.title);
@@ -106,6 +128,9 @@ function make_title(o) {
 	return title_prefix(title) + fancy;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// Callback generator for add_alias.
+///////////////////////////////////////////////////////////////////////////////
 function insert_alias(str) {
 	return function (n, orig_string) {
 		var replaced = document.createElement('span');
@@ -116,6 +141,9 @@ function insert_alias(str) {
 	};
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// Given a parsed input line object, add the appropriate alias.
+///////////////////////////////////////////////////////////////////////////////
 function add_parsed_alias(o, origLine) {
 	if (!o) {
 		// parse error
@@ -126,22 +154,34 @@ function add_parsed_alias(o, origLine) {
 	add_alias(o.name, insert_alias(title));
 }
 
+///////////////////////////////////////////////////////////////////////////////
 // Recursively apply transformation to all text nodes in a DOM subtree.
+///////////////////////////////////////////////////////////////////////////////
 function r(n) {
 	if (n.nodeType == 1) {
+		// Recurse through all child nodes of this DOM element.
 		for (var i = 0, l = n.childNodes.length; i < l; ++i) {
 			r(n.childNodes[i]);
 		}
 	} else if (n.nodeType == 3) {
+		// We are in a DOM text node.
+		// Replace every occurrence of a real name with an alias.
+		// If the node contains x substrings, we split this text node into 2x+1 parts.
 		var o = alias_regexp.exec(n.nodeValue);
 		while (o) {
-			if (o.index > 0) {
-				var before = document.createTextNode(n.nodeValue.substring(0, o.index));
-				n.parentNode.insertBefore(before, n);
-			}
+			// We currently have n.nodeValue == a+b+c, and b needs to be replaced with f(b).
+
+			// Insert text node `a` before `n`:
+			var before = document.createTextNode(n.nodeValue.substring(0, o.index));
+			n.parentNode.insertBefore(before, n);
+
+			// Insert nodes `f(b)` before n:
 			aliases.replacements[o[0]](n, o[0]);
+
+			// Set the text of the `n` node to the remaining text `c`:
 			n.nodeValue = n.nodeValue.substring(o.index + o[0].length, n.nodeValue.length);
 
+			// Find the next occurrence:
 			o = alias_regexp.exec(n.nodeValue);
 		}
 	}
@@ -155,15 +195,6 @@ window.theTKTitleObserver = new MutationObserver(function (mutations) {
 	for (var i = 0, l = mutations.length; i < l; ++i) {
 		var m = mutations[i];
 		r(m.target);
-		/*
-		if (m.type == 'characterData') {
-			r(m.target);
-		} else if (m.addedNodes != null) {
-			for (var ii = 0, ll = m.addedNodes.length; ii < ll; ++ii) {
-				r(m.addedNodes[ii]);
-			}
-		}
-		*/
 	}
 });
 
@@ -173,6 +204,9 @@ window.theTKTitleObserver.observe(document.body, {
 	'subtree': true
 });
 
+///////////////////////////////////////////////////////////////////////////////
+// Add aliases from input alias specification.
+///////////////////////////////////////////////////////////////////////////////
 function add_aliases(input) {
 	parse_aliases(input, add_parsed_alias);
 	compute_alias_regexp();
