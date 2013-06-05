@@ -170,15 +170,20 @@ function r(n) {
 		var o = alias_regexp.exec(n.nodeValue);
 		while (o) {
 			// We currently have n.nodeValue == a+b+c, and b needs to be replaced with f(b).
+			// f(b) is not necessarily just a text string; it could be an arbitrary sequence of DOM nodes.
+			// Therefore, we split `n` into three parts:
+			// A text node containing `a`, the dom nodes `f(b)`, and a text node containing `c`.
+			// We have to recurse on `c` (the rest of the text),
+			// so in reality we just insert `a` and `f(b)` before `n` and replace `n` with `c`.
 
-			// Insert text node `a` before `n`:
+			// Insert (possibly empty) text node `a` before `n`:
 			var before = document.createTextNode(n.nodeValue.substring(0, o.index));
-			n.parentNode.insertBefore(before, n);
+			if (o.index != 0) n.parentNode.insertBefore(before, n);
 
-			// Insert nodes `f(b)` before n:
+			// Insert nodes `f(b)` before n (might be a no-op if f(b) is empty):
 			aliases.replacements[o[0]](n, o[0]);
 
-			// Set the text of the `n` node to the remaining text `c`:
+			// Set the text of the `n` node to the remaining (possibly empty) text `c`:
 			n.nodeValue = n.nodeValue.substring(o.index + o[0].length, n.nodeValue.length);
 
 			// Find the next occurrence:
