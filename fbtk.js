@@ -335,6 +335,7 @@ add_aliases(
 '2007 VC   Kasper Søgaard Deleuran\n'+
 '2008 CERM Sofie Kastbjerg\n'+
 '2008 FORM Tue Christensen\n'+
+'2008 KASS Adam Ehlers Nyholm Thomsen\n'+
 '2008 PR   Cecilie Vahlstrup\n'+
 '2009 CERM Christian Bladt Brandt\n'+
 '2009 FORM Jonas Bæklund\n'+
@@ -414,5 +415,15 @@ add_aliases(
 '"Cramer"     Morten \'Cramer\' Nikolaj Pløger\n'+
 '"#"          Rikke Hein\n'+
 '"Sean"       Sean Geggie\n'+
+'"Køleren"    Karsten Handrup\n'+
+'"P∀"         Palle Jørgensen\n'+
+'"Thyregod"   Klaus Eriksen\n'+
+'"Graa mand"  Per Graa\n'+
+'"Łabich"     Anders Labich\n'+
+'"Onklen"     Henrik Bindesbøll Nørregaard\n'+
+'"Clausen"    Jakob Clausen\n'+
+'"Dobbelt Wester" Michael Westergaard\n'+
+'"Brøl"       Morten Grud Rasmussen\n'+
+'"Stive-Anna" Anna Sejersen Riis\n'+
 ''
 );
