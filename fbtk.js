@@ -65,9 +65,23 @@ var aliases = {'replacements': {}, 'targets': []};
 // replaced text.
 ///////////////////////////////////////////////////////////////////////////////
 function add_alias(source, destination) {
+	// June 12, 2013:
+	// On latin1 pages, the utf8 strings in this script do not match with
+	// non-ascii characters. I don't know how to do this for all
+	// characters, so give special treatment to those special letters.
+	// This appears to fix it for both Firefox 24 and Chromium 27.
+	source = (source
+		  .replace(/æ/g, '\xe6')
+		  .replace(/ø/g, '\xf8')
+		  .replace(/å/g, '\xe5')
+		  .replace(/Æ/g, '\xc6')
+		  .replace(/Ø/g, '\xd8')
+		  .replace(/Å/g, '\xc5'));
+
 	aliases.targets.push(source);
 	aliases.replacements[source] = destination;
 }
+
 add_alias('TÅGEKAMMERET', insert_TK_html(TKET));
 add_alias('TÅGEKAMMER', insert_TK_html(TK));
 
