@@ -45,8 +45,10 @@ function insert_TK_html(h) {
 	return function (n, orig_string) {
 		var replaced = document.createElement('span');
 		replaced.style.fontFamily = 'monospace';
+		replaced.style.fontWeight = 'normal';
 		replaced.style.display = 'inline-block';
 		replaced.style.whiteSpace = 'nowrap';
+		replaced.className = 'tket';
 		replaced.innerHTML = h;
 		n.parentNode.insertBefore(replaced, n);
 	};
