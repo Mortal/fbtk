@@ -156,6 +156,7 @@ function icon_eligible(n) {
 ///////////////////////////////////////////////////////////////////////////////
 function insert_alias(str, prefixSVG) {
 	return function (n, orig_string) {
+		// TODO make sure the svg is not separated by a line break from the title.
 		if (svg[prefixSVG] && icon_eligible(n)) {
 			var before = document.createElement('span');
 			before.innerHTML = svg[prefixSVG];
