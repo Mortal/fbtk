@@ -129,7 +129,7 @@ function make_title(o) {
 	var title = o.title;
 	var fancy = title_bling(o.title);
 	if ('year' in o) {
-		var year = o.year;
+		var year = o['year'];
 		if (title == 'FUAN') {
 			fancy = year_prefix(year) + fancy;
 		} else if (title.substring(0, 2) != 'FU') {
