@@ -106,7 +106,7 @@ function parse_alias(line) {
 	var hangaround = /^"([^"]*)" +(.*)/.exec(line);
 	if (hangaround) {
 		return {'name': hangaround[2],
-			'title': hangaround[1]};
+			'nickname': hangaround[1]};
 	}
 	return null;
 }
@@ -128,6 +128,7 @@ function parse_aliases(input, cb) {
 // Given a parsed input line object, produce the fancy unicode text to insert.
 ///////////////////////////////////////////////////////////////////////////////
 function make_title(o) {
+	if (o.nickname) return o.nickname;
 	var title = o.title;
 	var fancy = title_bling(o.title);
 	if ('year' in o) {
