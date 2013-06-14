@@ -128,9 +128,9 @@ function parse_aliases(input, cb) {
 // Given a parsed input line object, produce the fancy unicode text to insert.
 ///////////////////////////////////////////////////////////////////////////////
 function make_title(o) {
-	if (o.nickname) return o.nickname;
-	var title = o.title;
-	var fancy = title_bling(o.title);
+	if (o['nickname']) return o['nickname'];
+	var title = o['title'];
+	var fancy = title_bling(o['title']);
 	if ('year' in o) {
 		var year = o['year'];
 		if (title == 'FUAN') {
@@ -183,8 +183,8 @@ function add_parsed_alias(o, origLine) {
 		return;
 	}
 	var title = make_title(o);
-	var prefixSVG = o.title ? (/^FU/.exec(o.title) ? 'FU' : o.title) : '';
-	add_alias(o.name, insert_alias(title, prefixSVG));
+	var prefixSVG = o['title'] ? (/^FU/.exec(o['title']) ? 'FU' : o['title']) : '';
+	add_alias(o['name'], insert_alias(title, prefixSVG));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
