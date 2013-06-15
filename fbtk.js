@@ -56,7 +56,7 @@ function insert_TK_html(h) {
 	};
 }
 
-var aliases = {'replacements': {}, 'targets': []};
+var aliases = {replacements: {}, targets: [], by_path: {}};
 
 ///////////////////////////////////////////////////////////////////////////////
 // Add a text replacement.
@@ -97,18 +97,26 @@ compute_alias_regexp();
 // Parse input line to an object.
 ///////////////////////////////////////////////////////////////////////////////
 function parse_alias(line) {
+	var o = {};
 	var prefixed = /^(\d+) +([^ ]+) +(.*)/.exec(line);
-	if (prefixed) {
-		return {'name': prefixed[3],
-			'year': prefixed[1],
-			'title': prefixed[2]};
-	}
 	var hangaround = /^"([^"]*)" +(.*)/.exec(line);
-	if (hangaround) {
-		return {'name': hangaround[2],
-			'nickname': hangaround[1]};
+	if (prefixed) {
+		o['name'] = prefixed[3];
+		o['year'] = prefixed[1];
+		o['title'] = prefixed[2];
+	} else if (hangaround) {
+		o['name'] = hangaround[2];
+		o['nickname'] = hangaround[1];
+	} else {
+		return null;
 	}
-	return null;
+	var re = /^(path|uid)=([^ ]*) (.*)/;
+	var m;
+	while (m = re.exec(o['name'])) {
+		o[m[1]] = m[2];
+		o['name'] = m[3];
+	}
+	return o;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -179,12 +187,18 @@ function insert_alias(str, prefixSVG) {
 function add_parsed_alias(o, origLine) {
 	if (!o) {
 		// parse error
+		debugger;
 		console.log("Failed to parse input line: ["+origLine+"]");
 		return;
 	}
 	var title = make_title(o);
 	var prefixSVG = o['title'] ? (/^FU/.exec(o['title']) ? 'FU' : o['title']) : '';
-	add_alias(o['name'], insert_alias(title, prefixSVG));
+	var fn = insert_alias(title, prefixSVG);
+	add_alias(o['name'], fn);
+	if (o['path']) {
+		aliases.by_path[o['path']] = fn;
+		fn.path = o['path'];
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -192,6 +206,21 @@ function add_parsed_alias(o, origLine) {
 ///////////////////////////////////////////////////////////////////////////////
 function r(n) {
 	if (n.nodeType == 1) {
+		var href = n.tagName.toLowerCase() != 'a' ? ''
+			: (''+n.href).replace(/^https?:\/\/www\.facebook.com|.*/, '').replace(/\?.*/, '');
+		if (href && aliases.by_path[href]) {
+			var textOnly = true;
+			for (var c = n.firstChild; c != null; c = c.nextSibling) {
+				if (c.nodeType == 1) textOnly = false;
+			}
+			if (textOnly) {
+				var before = n.textContent;
+				n.innerHTML = '';
+				var m = n.appendChild(document.createTextNode(''));
+				aliases.by_path[href](m, before);
+			}
+			return;
+		}
 		// Recurse through all child nodes of this DOM element.
 		for (var i = 0, l = n.childNodes.length; i < l; ++i) {
 			r(n.childNodes[i]);
@@ -214,12 +243,23 @@ function r(n) {
 			// so in reality we just insert `a` and `f(b)`
 			// before `n` and replace `n` with `c`.
 
+			var replacer = aliases.replacements[o[0]];
+
+			if (n.parentNode.tagName.toLowerCase() == 'a'
+					&& replacer.path
+					&& (''+n.parentNode.href)
+						.replace(/^https?:\/\/www\.facebook.com|.*/, '')
+						.replace(/\?.*/, '') != replacer.path)
+			{
+				break;
+			}
+
 			// Insert (possibly empty) text node `a` before `n`:
 			var before = document.createTextNode(n.nodeValue.substring(0, o.index));
 			if (o.index != 0) n.parentNode.insertBefore(before, n);
 
 			// Insert nodes `f(b)` before n (might be a no-op if f(b) is empty):
-			aliases.replacements[o[0]](n, o[0]);
+			replacer(n, o[0]);
 
 			// Set the text of the `n` node to the remaining (maybe empty) text `c`:
 			n.nodeValue =
@@ -630,9 +670,9 @@ svg_style+' version="1.1">'+
 add_aliases(
 '2003 CERM Sune S. Thomsen\n'+
 '2004 VC   Christina Koch Perry\n'+
-'2005 CERM Ole Søe Sørensen\n'+
+'2005 CERM path=/olesoee uid=598836823 Ole Søe Sørensen\n'+
 '2005 FORM Dan Beltoft\n'+
-'2005 KASS Tanja Kragbæk\n'+
+'2005 KASS path=/tanja.kragbaek uid=538147907 Tanja Kragbæk\n'+
 '2005 VC   Rasmus Ragnvald Olofsson\n'+
 '2006 CERM Tine Vraast-Thomsen\n'+
 '2006 FORM Michael Volf Henneberg\n'+
@@ -641,104 +681,104 @@ add_aliases(
 '2006 PR   Mia Dyhr Christensen\n'+
 '2006 SEKR Lasse Vilhelmsen\n'+
 '2006 VC   Martin Studsgaard Christensen\n'+
-'2007 CERM Johan Sigfred Abildskov\n'+
+'2007 CERM path=/RandomSort uid=531349695 Johan Sigfred Abildskov\n'+
 '2007 FORM Jan Munksgård Baggesen\n'+
-'2007 KASS Mads Baggesen\n'+
-'2007 NF   Eva Lykkegaard Poulsen\n'+
+'2007 KASS path=/mads.baggesen uid=567602916 Mads Baggesen\n'+
+'2007 NF   path=/eva.l.poulsen.3 uid=686826972 Eva Lykkegaard Poulsen\n'+
 '2007 PR   Sidse Damgaard\n'+
-'2007 SEKR Ninni Schaldemose\n'+
+'2007 SEKR path=/ninni.schaldemose uid=587991416 Ninni Schaldemose\n'+
 '2007 VC   Kasper Søgaard Deleuran\n'+
-'2008 CERM Sofie Kastbjerg\n'+
+'2008 CERM path=/sofie.kastbjerg uid=560433273 Sofie Kastbjerg\n'+
 '2008 FORM Tue Christensen\n'+
-'2008 KASS Adam Ehlers Nyholm Thomsen\n'+
-'2008 PR   Cecilie Vahlstrup\n'+
+'2008 KASS path=/adam.e.n.thomsen uid=695940123 Adam Ehlers Nyholm Thomsen\n'+
+'2008 PR   path=/cecilie.vahlstrup uid=594898620 Cecilie Vahlstrup\n'+
 '2009 CERM Christian Bladt Brandt\n'+
 '2009 FORM Jonas Bæklund\n'+
-'2009 KASS Rikke Aagaard\n'+
+'2009 KASS path=/raagaard85 uid=548956219 Rikke Aagaard\n'+
 '2009 NF   Ditte Både Sandkamm\n'+
-'2009 PR   Nikolaj Andresen\n'+
+'2009 PR   path=/nikolaj.t.andresen uid=1354073864 Nikolaj Andresen\n'+
 '2009 SEKR Anne Clemmensen\n'+
-'2009 VC   Troels Tinggaard Hahn\n'+
-'2010 FORM Mie Elholm Birkbak\n'+
-'2010 KASS Torben Muldvang Andersen\n'+
-'2010 NF   Morten Jensen\n'+
-'2010 PR   Kristoffer L. Winge\n'+
-'2010 SEKR Maria Kragelund\n'+
+'2009 VC   path=/troels.hahn uid=1219988735 Troels Tinggaard Hahn\n'+
+'2010 FORM path=/mie.birkbak uid=716882878 Mie Elholm Birkbak\n'+
+'2010 KASS path=/muldvang uid=831299266 Torben Muldvang Andersen\n'+
+'2010 NF   path=/m261087 uid=523573715 Morten Jensen\n'+
+'2010 PR   path=/kwinge uid=652817831 Kristoffer L. Winge\n'+
+'2010 SEKR path=/maria.kragelund.5 uid=741254142 Maria Kragelund\n'+
 '2010 VC   Morten Rasmussen\n'+
-'2011 CERM Sabrina Tang Christensen\n'+
-'2011 FORM Jakob Schultz-Nielsen\n'+
-'2011 KASS Britt Fredsgaard\n'+
-'2011 NF   Kasper Monrad\n'+
-'2011 PR   Marie Kirkegaard\n'+
-'2011 SEKR Niels Ramskov Bøje\n'+
-'2011 VC   Maiken Haahr Hansen\n'+
-'2012 CERM Mads Fabricius\n'+
-'2012 FORM Steffen Videbæk Petersen\n'+
-'2012 KASS Eva Gjaldbæk Frandsen\n'+
-'2012 NF   Johannes Christensen\n'+
-'2012 PR   Nana Halle\n'+
-'2012 SEKR Jakob Rørsted Mosumgaard\n'+
-'2012 VC   Peter Slemming-Adamsen\n'+
-'2005 FUJA Jane Drejer\n'+
+'2011 CERM path=/SabrinaTangChristensen uid=647752303 Sabrina Tang Christensen\n'+
+'2011 FORM path=/schultznielsen uid=1350090406 Jakob Schultz-Nielsen\n'+
+'2011 KASS path=/fredsgaard uid=657982935 Britt Fredsgaard\n'+
+'2011 NF   path=/kaspermonrad9 uid=799570537 Kasper Monrad\n'+
+'2011 PR   path=/makirr uid=708428917 Marie Kirkegaard\n'+
+'2011 SEKR path=/profile.php?id=508599429 uid=508599429 Niels Ramskov Bøje\n'+
+'2011 VC   path=/maiken.h.hansen.5 uid=1102944964 Maiken Haahr Hansen\n'+
+'2012 CERM path=/madsf uid=586671237 Mads Fabricius\n'+
+'2012 FORM path=/spet.dk uid=749846857 Steffen Videbæk Petersen\n'+
+'2012 KASS path=/gjaldbxk uid=1089742998 Eva Gjaldbæk Frandsen\n'+
+'2012 NF   path=/johannes.christensen.775 uid=541510274 Johannes Christensen\n'+
+'2012 PR   path=/nana.halle uid=652704298 Nana Halle\n'+
+'2012 SEKR path=/jakob.moss uid=1435654155 Jakob Rørsted Mosumgaard\n'+
+'2012 VC   path=/peter.slemmingadamsen uid=703621268 Peter Slemming-Adamsen\n'+
+'2005 FUJA path=/jane.drejer uid=1199803462 Jane Drejer\n'+
 '2006 FUZA Sarah Zakarias\n'+
-'2007 FUAN Kenneth Sejdenfaden Bøgh\n'+
+'2007 FUAN path=/k.seidenfaden uid=756134409 Kenneth Sejdenfaden Bøgh\n'+
 '2007 FUHO Daniel Dalhoff Hviid\n'+
-'2007 FUME Mette Aagaard\n'+
+'2007 FUME path=/mette.aagaard2 uid=759207466 Mette Aagaard\n'+
 '2008 FUAN Andreas Sand Gregersen\n'+
-'2008 FUNÉ René Søndergaard\n'+
-'2008 FURU Jesper Unna\n'+
+'2008 FUNÉ path=/southgaard uid=654401669 René Søndergaard\n'+
+'2008 FURU path=/jesper.unna uid=574450803 Jesper Unna\n'+
 '2009 FUBS Sandra Pedersen\n'+
-'2009 FUHN Mette Hansen\n'+
-'2009 FUXA Christian Fretté\n'+
-'2009 FUØL Carina Kjeldahl Møller\n'+
+'2009 FUHN path=/mette.hansen.18294053 uid=800457327 Mette Hansen\n'+
+'2009 FUXA path=/christianxafrette uid=1177474542 Christian Fretté\n'+
+'2009 FUØL path=/c.kjeldahl uid=560527546 Carina Kjeldahl Møller\n'+
 '2009 FUØR Signe Grønborg\n'+
-'2010 FUAN Andreas Nikolai Kyed Bovin\n'+
-'2010 FUNI Asbjørn Stensgaard\n'+
+'2010 FUAN path=/andreas.bovin uid=864545226 Andreas Nikolai Kyed Bovin\n'+
+'2010 FUNI path=/asbjorn.stensgaard uid=549810568 Asbjørn Stensgaard\n'+
 '2010 FUPH Pernille Hornemann Jensen\n'+
-'2010 FUUL Camilla Pedersen\n'+
-'2010 FURØ Lærke Rønlev Reinholdt\n'+
-'2011 FUFR Anders Friis Jensen\n'+
-'2011 FUHR Christina Moeslund\n'+
-'2011 FUIØ Mathilde Biørn Madsen\n'+
+'2010 FURØ path=/reinholdt uid=1145576654 Lærke Rønlev Reinholdt\n'+
+'2010 FUUL path=/camilla.pedersen.90834 uid=740348390 Camilla Pedersen\n'+
+'2011 FUFR path=/andersfriis.jensen uid=100000345142992 Anders Friis Jensen\n'+
+'2011 FUHR path=/christina.moeslund uid=823542341 Christina Moeslund\n'+
+'2011 FUIØ path=/mathilde.b.m uid=1050345519 Mathilde Biørn Madsen\n'+
 '2011 FULA Camilla Skree Sørensen\n'+
-'2011 FUNU Andreas Bendix Nuppenau\n'+
-'2011 FURI Frederik Jerløv\n'+
-'2011 FURT Martin Sand\n'+
-'2012 FUAN Henrik Lund Mortensen\n'+
-'2012 FUCO Jacob Schnedler\n'+
-'2012 FUHI Mathias Dannesbo\n'+
-'2012 FULI Line Bjerg Sørensen\n'+
-'2012 FULO Lone Koed\n'+
-'2012 FULS Sara Poulsen\n'+
-'2012 FUMO Marianne Ostenfeldt Mortensen\n'+
-'2012 FUMY Rasmus Thygesen\n'+
-'2012 FUNA Karina Sunds Nielsen\n'+
-'2012 FUZU Christian Bonar Zeuthen\n'+
-'"ADAM"       Adam Etches\n'+
-'"Nissen"     Anders Hauge Nissen\n'+
-'"Metal Bo"   Bo Mortensen\n'+
-'"CBM"        Christian Brandt Møller\n'+
-'"J-DAG"      Jacob Damgaard Jensen\n'+
-'"Jen_s"      Jens Kusk Block\n'+
-'"EFUIT"      Lauge Mølgaard Hoyer\n'+
-'"Have"       Martin Anker Have\n'+
-'"Mavraganis" Mathias Jaquet Mavraganis\n'+
-'"Rav"        Mathias Rav\n'+
-'"Metten"     Mette Lysgaard Schulz\n'+
-'"Vester"     Mikkel Bak Vester\n'+
-'"M3"         Morten Schaumburg\n'+
-'"Cramer"     Morten \'Cramer\' Nikolaj Pløger\n'+
-'"#"          Rikke Hein\n'+
-'"Sean"       Sean Geggie\n'+
-'"Køleren"    Karsten Handrup\n'+
-'"P∀"         Palle Jørgensen\n'+
-'"Thyregod"   Klaus Eriksen\n'+
-'"Graa mand"  Per Graa\n'+
-'"Łabich"     Anders Labich\n'+
-'"Onklen"     Henrik Bindesbøll Nørregaard\n'+
-'"Clausen"    Jakob Clausen\n'+
+'2011 FUNU path=/andreas.nuppenau uid=657398674 Andreas Bendix Nuppenau\n'+
+'2011 FURI path=/frederik.jerloev uid=100001979280329 Frederik Jerløv\n'+
+'2011 FURT path=/martin.sand.nielsen uid=1132332599 Martin Sand\n'+
+'2012 FUAN path=/Henrik.lm uid=1246852882 Henrik Lund Mortensen\n'+
+'2012 FUCO path=/schnedler1 uid=1163223380 Jacob Schnedler\n'+
+'2012 FUHI path=/neicdk uid=1310435216 Mathias Dannesbo\n'+
+'2012 FULI path=/line.sorensen.7 uid=766806584 Line Bjerg Sørensen\n'+
+'2012 FULO path=/lone.koed uid=1230718429 Lone Koed\n'+
+'2012 FULS path=/sara.poulsen.370 uid=610248111 Sara Poulsen\n'+
+'2012 FUMO path=/marianne.o.mortensen uid=536489723 Marianne Ostenfeldt Mortensen\n'+
+'2012 FUMY path=/rasmus.thygesen1 uid=100001806380614 Rasmus Thygesen\n'+
+'2012 FUNA path=/karina.s.nielsen.9 uid=1579573485 Karina Sunds Nielsen\n'+
+'2012 FUZU path=/TheZeuthen uid=1200968796 Christian Bonar Zeuthen\n'+
+'"ADAM"           path=/adam.etches.1 uid=1157687529 Adam Etches\n'+
+'"Nissen"         path=/andersnissen uid=619069458 Anders Hauge Nissen\n'+
+'"Metal Bo"       Bo Mortensen\n'+
+'"CBM"            path=/cbmoller uid=1388593466 Christian Brandt Møller\n'+
+'"J-DAG"          path=/jacobdamgaardjensen uid=818434640 Jacob Damgaard Jensen\n'+
+'"Jen_s"          Jens Kusk Block\n'+
+'"EFUIT"          path=/laugehoyer uid=788319674 Lauge Mølgaard Hoyer\n'+
+'"Have"           Martin Anker Have\n'+
+'"Mavraganis"     path=/RastaRamses uid=698805277 Mathias Jaquet Mavraganis\n'+
+'"Rav"            path=/mathiasrav uid=825874205 Mathias Rav\n'+
+'"Metten"         path=/mette.schulz uid=664978994 Mette Lysgaard Schulz\n'+
+'"Vester"         path=/mvester uid=571233959 Mikkel Bak Vester\n'+
+'"M3"             path=/morten.schaumburg uid=601679753 Morten Schaumburg\n'+
+'"Cramer"         path=/cramer86 uid=1043318079 Morten \'Cramer\' Nikolaj Pløger\n'+
+'"#"              Rikke Hein\n'+
+'"Sean"           path=/sean.geggie uid=1601624394 Sean Geggie\n'+
+'"Køleren"        Karsten Handrup\n'+
+'"P∀"             Palle Jørgensen\n'+
+'"Thyregod"       Klaus Eriksen\n'+
+'"Graa mand"      path=/per.graa uid=606838463 Per Graa\n'+
+'"Łabich"         Anders Labich\n'+
+'"Onklen"         Henrik Bindesbøll Nørregaard\n'+
+'"Clausen"        Jakob Clausen\n'+
 '"Dobbelt Wester" Michael Westergaard\n'+
-'"Brøl"       Morten Grud Rasmussen\n'+
-'"Stive-Anna" Anna Sejersen Riis\n'+
+'"Brøl"           Morten Grud Rasmussen\n'+
+'"Stive-Anna"     Anna Sejersen Riis\n'+
 ''
 );
