@@ -157,19 +157,30 @@ function icon_eligible(n) {
 ///////////////////////////////////////////////////////////////////////////////
 // Callback generator for add_alias.
 ///////////////////////////////////////////////////////////////////////////////
-function insert_alias(str, prefixSVG) {
+function insert_alias(o, prefixSVG) {
 	return function (n, orig_string) {
+		var str = make_title(o);
 		// TODO make sure the svg is not separated by a line break from the title.
 		if (svg[prefixSVG] && icon_eligible(n)) {
+			var postfix = '';
+			if (o['title'].substring(0, 2) == 'FU') {
+				postfix = o['title'].substring(2, 4);
+			}
+			var yp = year_prefix(o['year']);
+			n.parentNode.insertBefore(document.createTextNode(yp), n);
+
 			var before = document.createElement('span');
 			before.innerHTML = svg[prefixSVG];
 			n.parentNode.insertBefore(before, n);
+
+			n.parentNode.insertBefore(document.createTextNode(postfix), n);
+		} else {
+			var replaced = document.createElement('span');
+			replaced.title = orig_string;
+			replaced.className = 'tk_title';
+			replaced.textContent = str;
+			n.parentNode.insertBefore(replaced, n);
 		}
-		var replaced = document.createElement('span');
-		replaced.title = orig_string;
-		replaced.className = 'tk_title';
-		replaced.textContent = str;
-		n.parentNode.insertBefore(replaced, n);
 	};
 }
 
@@ -182,9 +193,8 @@ function add_parsed_alias(o, origLine) {
 		console.log("Failed to parse input line: ["+origLine+"]");
 		return;
 	}
-	var title = make_title(o);
 	var prefixSVG = o['title'] ? (/^FU/.exec(o['title']) ? 'FU' : o['title']) : '';
-	add_alias(o['name'], insert_alias(title, prefixSVG));
+	add_alias(o['name'], insert_alias(o, prefixSVG));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -258,7 +268,7 @@ function add_aliases(input) {
 }
 
 
-var svg_style = 'style="height: 1em; width: 1.5em; margin-right: .3em"';
+var svg_style = 'style="height: 1em; width: 1.5em; margin-left: -0.25em; margin-right: -0.25em"';
 
 svg['CERM'] = (
 '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 564.39" '+
