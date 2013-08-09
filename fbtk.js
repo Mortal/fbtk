@@ -628,6 +628,8 @@ svg_style+' version="1.1">'+
 );
 
 add_aliases(
+'2002 FORM Nikolaj Thomas Zinner\n'+
+'2002 KASS Rasmus Villemoes\n'+
 '2003 CERM Sune S. Thomsen\n'+
 '2004 VC   Christina Koch Perry\n'+
 '2005 CERM Ole Søe Sørensen\n'+
