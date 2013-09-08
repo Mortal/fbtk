@@ -165,7 +165,7 @@ function icon_eligible(n) {
 // Callback generator for add_alias.
 ///////////////////////////////////////////////////////////////////////////////
 function insert_alias(str, prefixSVG) {
-	return function (n, orig_string) {
+	var cb = function (n, orig_string) {
 		// TODO make sure the svg is not separated by a line break from the title.
 		if (svg[prefixSVG] && icon_eligible(n)) {
 			var before = document.createElement('span');
@@ -178,6 +178,8 @@ function insert_alias(str, prefixSVG) {
 		replaced.textContent = str;
 		n.parentNode.insertBefore(replaced, n);
 	};
+	cb.inserted_string = str;
+	return cb;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
