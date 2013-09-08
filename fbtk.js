@@ -262,8 +262,6 @@ window.theTKTitleObserver.observe(document.body, {
 ///////////////////////////////////////////////////////////////////////////////
 function add_aliases(input) {
 	parse_aliases(input, add_parsed_alias);
-	compute_alias_regexp();
-	r(document.body);
 }
 
 
@@ -753,3 +751,13 @@ add_aliases(
 '"Stive-Anna" Anna Sejersen Riis\n'+
 ''
 );
+
+if (new Date().getTime() < 1378936800000) {
+	add_aliases(
+	'"♥ Steffen Videbæk Fredslund" Steffen Videbæk Fredsgaard\n'+
+	'"♥ Britt Videbæk Fredslund" Britt Videbæk Fredsgaard\n'+
+	'');
+}
+
+compute_alias_regexp();
+r(document.body);
