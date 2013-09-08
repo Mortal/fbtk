@@ -676,18 +676,19 @@ add_aliases(
 '2010 VC   Morten Rasmussen\n'+
 '2011 CERM Sabrina Tang Christensen\n'+
 '2011 FORM Jakob Schultz-Nielsen\n'+
-'2011 KASS Britt Fredsgaard\n'+
+'2011 KASS Britt Videbæk Fredsgaard\n'+
 '2011 NF   Kasper Monrad\n'+
 '2011 PR   Marie Kirkegaard\n'+
 '2011 SEKR Niels Ramskov Bøje\n'+
 '2011 VC   Maiken Haahr Hansen\n'+
 '2012 CERM Mads Fabricius\n'+
-'2012 FORM Steffen Videbæk Petersen\n'+
+'2012 FORM Steffen Videbæk Fredsgaard\n'+
 '2012 KASS Eva Gjaldbæk Frandsen\n'+
 '2012 NF   Johannes Christensen\n'+
 '2012 PR   Nana Halle\n'+
 '2012 SEKR Jakob Rørsted Mosumgaard\n'+
 '2012 VC   Peter Slemming-Adamsen\n'+
+//'2013 CERM Philip Tchernavskij\n'+
 '2005 FUJA Jane Drejer\n'+
 '2006 FUZA Sarah Zakarias\n'+
 '2007 FUAN Kenneth Sejdenfaden Bøgh\n'+
@@ -723,6 +724,7 @@ add_aliases(
 '2012 FUMY Rasmus Thygesen\n'+
 '2012 FUNA Karina Sunds Nielsen\n'+
 '2012 FUZU Christian Bonar Zeuthen\n'+
+//'2013 FU   Ellen Brun Jakobsen\n'+
 '"ADAM"       Adam Etches\n'+
 '"Nissen"     Anders Hauge Nissen\n'+
 '"Metal Bo"   Bo Mortensen\n'+
