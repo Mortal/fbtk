@@ -139,6 +139,9 @@ function make_title(o) {
 		var year = o['year'];
 		if (title == 'FUAN') {
 			fancy = year_prefix(year) + fancy;
+		} else if (title == 'FU') {
+			// Unnamed FU (e.g. KFU); always show prefix
+			fancy = year_prefix(year) + fancy;
 		} else if (title.substring(0, 2) != 'FU') {
 			fancy = year_prefix(year) + fancy;
 		} else {
