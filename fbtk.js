@@ -9,12 +9,16 @@ function year_prefix(year) {
 	if (0 <= year && year < prefixes.length) {
 		return prefixes[year];
 	}
-	var exponent = (year - 3)+'';
+	if (year == -1) return 'K';
+	var negative = false;
+	var exponent = year - 3;
+	if (year < 0) { exponent = -year; negative = true; }
+	exponent = exponent+'';
 	var exponentString = '';
 	var s = ['⁰', '¹', '²', '³', '⁴', '⁵', '⁶', '⁷', '⁸', '⁹']
 	for (var i = 0; i < exponent.length; ++i)
 		exponentString += s[exponent.charCodeAt(i) - 48];
-	return 'T'+exponentString+'O';
+	return negative ? 'K'+exponentString : 'T'+exponentString+'O';
 }
 
 function title_bling(title) {
