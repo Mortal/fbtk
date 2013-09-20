@@ -754,12 +754,5 @@ add_aliases(
 ''
 );
 
-if (new Date().getTime() < 1378936800000) {
-	add_aliases(
-	'"♥ Steffen Videbæk Fredslund" Steffen Videbæk Fredsgaard\n'+
-	'"♥ Britt Videbæk Fredslund" Britt Videbæk Fredsgaard\n'+
-	'');
-}
-
 compute_alias_regexp();
 r(document.body);
