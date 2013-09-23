@@ -726,6 +726,16 @@ add_aliases(
 '2012 FUMO Marianne Ostenfeldt Mortensen\n'+
 '2012 FUMY Rasmus Thygesen\n'+
 '2012 FUZU Christian Bonar Zeuthen\n'+
+'2013 FUAN Dennis Krongaard Mikkelsen\n'+
+'2013 FUAX Alexandra Fabricius Porsgaard\n'+
+'2013 FUBI Benedikte Sofie Werk\n'+
+'2013 FUET Oliver Emil Harritslev Christensen\n'+
+'2013 FUGR Asger Holm Agergaard\n'+
+'2013 FUNK Jonas Kielsholm\n'+
+'2013 FUSE Mie Christine Wilhelmsen\n'+
+'2013 FUST Amalie Louise Stokholm\n'+
+'2013 FUTN Anja Trans Nielsen\n'+
+'2013 FUUS Rasmus Korsgaard Kjeldgaard\n'+
 '"ADAM"       Adam Etches\n'+
 '"Nissen"     Anders Hauge Nissen\n'+
 '"Metal Bo"   Bo Mortensen\n'+
