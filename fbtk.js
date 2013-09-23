@@ -4,7 +4,7 @@
 // encoding test: rød grød med fløde æ ø å
 
 function year_prefix(year) {
-	year = 2012 - year;
+	year = 2013 - year;
 	var prefixes = ['', 'G', 'B', 'O', 'TO'];
 	if (0 <= year && year < prefixes.length) {
 		return prefixes[year];
@@ -688,7 +688,13 @@ add_aliases(
 '2012 PR   Nana Halle\n'+
 '2012 SEKR Jakob Rørsted Mosumgaard\n'+
 '2012 VC   Peter Slemming-Adamsen\n'+
-//'2013 CERM Philip Tchernavskij\n'+
+'2013 CERM Diana Christensen\n'+
+'2013 FORM Mathias Rav\n'+
+'2013 KASS Christina Moeslund\n'+
+'2013 NF   Christian Fretté\n'+
+'2013 PR   Mette Lysgaard Schulz\n'+
+'2013 SEKR Karina Sunds Nielsen\n'+
+'2013 VC   Mathias Dannesbo\n'+
 '2005 FUJA Jane Drejer\n'+
 '2006 FUZA Sarah Zakarias\n'+
 '2007 FUAN Kenneth Sejdenfaden Bøgh\n'+
@@ -699,7 +705,6 @@ add_aliases(
 '2008 FURU Jesper Unna\n'+
 '2009 FUBS Sandra Pedersen\n'+
 '2009 FUHN Mette Hansen\n'+
-'2009 FUXA Christian Fretté\n'+
 '2009 FUØL Carina Kjeldahl Møller\n'+
 '2009 FUØR Signe Grønborg\n'+
 '2010 FUAN Andreas Nikolai Kyed Bovin\n'+
@@ -708,7 +713,6 @@ add_aliases(
 '2010 FUUL Camilla Pedersen\n'+
 '2010 FURØ Lærke Rønlev Reinholdt\n'+
 '2011 FUFR Anders Friis Jensen\n'+
-'2011 FUHR Christina Moeslund\n'+
 '2011 FUIØ Mathilde Biørn Madsen\n'+
 '2011 FULA Camilla Skree Sørensen\n'+
 '2011 FUNU Andreas Bendix Nuppenau\n'+
@@ -716,15 +720,12 @@ add_aliases(
 '2011 FURT Martin Sand\n'+
 '2012 FUAN Henrik Lund Mortensen\n'+
 '2012 FUCO Jacob Schnedler\n'+
-'2012 FUHI Mathias Dannesbo\n'+
 '2012 FULI Line Bjerg Sørensen\n'+
 '2012 FULO Lone Koed\n'+
 '2012 FULS Sara Poulsen\n'+
 '2012 FUMO Marianne Ostenfeldt Mortensen\n'+
 '2012 FUMY Rasmus Thygesen\n'+
-'2012 FUNA Karina Sunds Nielsen\n'+
 '2012 FUZU Christian Bonar Zeuthen\n'+
-//'2013 FU   Ellen Brun Jakobsen\n'+
 '"ADAM"       Adam Etches\n'+
 '"Nissen"     Anders Hauge Nissen\n'+
 '"Metal Bo"   Bo Mortensen\n'+
@@ -734,8 +735,6 @@ add_aliases(
 '"EFUIT"      Lauge Mølgaard Hoyer\n'+
 '"Have"       Martin Anker Have\n'+
 '"Mavraganis" Mathias Jaquet Mavraganis\n'+
-'"Rav"        Mathias Rav\n'+
-'"Metten"     Mette Lysgaard Schulz\n'+
 '"Vester"     Mikkel Bak Vester\n'+
 '"M3"         Morten Schaumburg\n'+
 '"Cramer"     Morten \'Cramer\' Nikolaj Pløger\n'+
