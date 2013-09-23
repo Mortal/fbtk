@@ -730,7 +730,7 @@ add_aliases(
 '2013 FUAX Alexandra Fabricius Porsgaard\n'+
 '2013 FUBI Benedikte Sofie Werk\n'+
 '2013 FUET Oliver Emil Harritslev Christensen\n'+
-'2013 FUGR Asger Holm Agergaard\n'+
+'2013 FUGR Asger Agergaard\n'+
 '2013 FUNK Jonas Kielsholm\n'+
 '2013 FUSE Mie Christine Wilhelmsen\n'+
 '2013 FUST Amalie Louise Stokholm\n'+
