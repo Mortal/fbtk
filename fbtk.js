@@ -814,6 +814,7 @@ add_aliases(
 '"Dobbelt Wester" Michael Westergaard\n'+
 '"Brøl"       Morten Grud Rasmussen\n'+
 '"Stive-Anna" Anna Sejersen Riis\n'+
+'"Ålen"       Frederik Brinck Truelsen\n'+
 ''
 );
 
