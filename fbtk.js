@@ -225,10 +225,19 @@ function r(n) {
 
 			// Insert (possibly empty) text node `a` before `n`:
 			var before = document.createTextNode(n.nodeValue.substring(0, o.index));
-			if (o.index != 0) n.parentNode.insertBefore(before, n);
+			n.parentNode.insertBefore(before, n);
+			var next = before.nextSibling;
 
 			// Insert nodes `f(b)` before n (might be a no-op if f(b) is empty):
 			aliases.replacements[o[0]](n, o[0]);
+
+			var i = before.nextSibling;
+			var oldText = o[0];
+			while (i && i != next) {
+				i.setAttribute('data-tk-prev', oldText);
+				oldText = '';
+				i = i.nextSibling;
+			}
 
 			// Set the text of the `n` node to the remaining (maybe empty) text `c`:
 			n.nodeValue =
