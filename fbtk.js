@@ -787,7 +787,7 @@ add_aliases(
 '2013 FUNK Jonas Kielsholm\n'+
 '2013 FUSE Mie Christine Wilhelmsen\n'+
 '2013 FUST Amalie Louise Stokholm\n'+
-'2013 FUTN Anja Trans Nielsen\n'+
+'2013 FUTN Anja T Nielsen\n'+
 '2013 FUUS Rasmus Korsgaard Kjeldgaard\n'+
 '"ADAM"       Adam Etches\n'+
 '"Nissen"     Anders Hauge Nissen\n'+
