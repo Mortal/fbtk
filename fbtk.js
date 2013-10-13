@@ -166,23 +166,13 @@ function make_title(o) {
 	return fancy;
 }
 
-function icon_eligible(n) {
-	return true;
-	while (n) {
-		if (n.classList
-		    && (n.classList.contains("cover")
-			|| n.classList.contains("uiContextualLayer"))) return true;
-		n = n.parentNode;
-	}
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // Callback generator for add_alias.
 ///////////////////////////////////////////////////////////////////////////////
 function insert_alias(str, prefixSVG) {
 	var cb = function (n, orig_string) {
 		// TODO make sure the svg is not separated by a line break from the title.
-		if (svg[prefixSVG] && icon_eligible(n)) {
+		if (svg[prefixSVG]) {
 			var before = document.createElement('span');
 			before.innerHTML = svg[prefixSVG];
 			n.parentNode.insertBefore(before, n);
