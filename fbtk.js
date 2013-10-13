@@ -3,8 +3,19 @@
 // Date: May 22, 2013
 // encoding test: rød grød med fløde æ ø å
 
+var C = ('<span style="font-family: &quot;lucida grande&quot;,tahoma,verdana,arial,sans-serif;">'
++'\u2102</span>');
+window.TKconfig = ({
+	//'epsilon': 'e',
+	'dollar': '$',
+	'cermC': C,
+	'vcC': C,
+	'eksponent': true,
+	'gf': 2013
+});
+
 function year_prefix(year) {
-	year = 2013 - year;
+	year = window.TKconfig['gf'] - year;
 	var prefixes = ['', 'G', 'B', 'O', 'TO'];
 	if (0 <= year && year < prefixes.length) {
 		return prefixes[year];
@@ -15,16 +26,20 @@ function year_prefix(year) {
 	if (year < 0) { exponent = -year; negative = true; }
 	exponent = exponent+'';
 	var exponentString = '';
-	var s = ['⁰', '¹', '²', '³', '⁴', '⁵', '⁶', '⁷', '⁸', '⁹']
-	for (var i = 0; i < exponent.length; ++i)
-		exponentString += s[exponent.charCodeAt(i) - 48];
+	if (window.TKconfig['eksponent']) {
+		var s = ['⁰', '¹', '²', '³', '⁴', '⁵', '⁶', '⁷', '⁸', '⁹']
+		for (var i = 0; i < exponent.length; ++i)
+			exponentString += s[exponent.charCodeAt(i) - 48];
+	} else {
+		exponentString = exponent;
+	}
 	return negative ? 'K'+exponentString : 'T'+exponentString+'O';
 }
 
 function title_bling(title) {
-	if (title == "KASS") return "KA$$";
-	if (title == 'CERM') return "\u2102ERM"; // complex C
-	if (title == 'VC') return "V\u2102";
+	if (title == "KASS") return "KA" + window.TKconfig['dollar'] + window.TKconfig['dollar'];
+	if (title == 'CERM') return window.TKconfig['cermC'] + "ERM";
+	if (title == 'VC') return "V" + window.TKconfig['vcC'];
 
 	return title;
 }
@@ -175,7 +190,7 @@ function insert_alias(str, prefixSVG) {
 		var replaced = document.createElement('span');
 		replaced.title = orig_string;
 		replaced.className = 'tk_title';
-		replaced.textContent = str;
+		replaced.innerHTML = str;
 		n.parentNode.insertBefore(replaced, n);
 	};
 	cb.inserted_string = str;
@@ -248,23 +263,6 @@ function r(n) {
 		}
 	}
 }
-
-if (window.theTKTitleObserver) {
-	window.theTKTitleObserver.disconnect();
-}
-
-window.theTKTitleObserver = new MutationObserver(function (mutations) {
-	for (var i = 0, l = mutations.length; i < l; ++i) {
-		var m = mutations[i];
-		r(m.target);
-	}
-});
-
-window.theTKTitleObserver.observe(document.body, {
-	'childList': true,
-	'characterData': true,
-	'subtree': true
-});
 
 ///////////////////////////////////////////////////////////////////////////////
 // Add aliases from input alias specification.
@@ -825,5 +823,61 @@ add_aliases(
 ''
 );
 
-compute_alias_regexp();
-r(document.body);
+function activate_fbtk() {
+	compute_alias_regexp();
+	r(document.body);
+
+	if (window.theTKTitleObserver) {
+		window.theTKTitleObserver.disconnect();
+	}
+
+	window.theTKTitleObserver = new MutationObserver(function (mutations) {
+		for (var i = 0, l = mutations.length; i < l; ++i) {
+			var m = mutations[i];
+			r(m.target);
+		}
+	});
+
+	window.theTKTitleObserver.observe(document.body, {
+		'childList': true,
+		'characterData': true,
+		'subtree': true
+	});
+}
+
+function deactivate_fbtk() {
+	if (window.theTKTitleObserver) {
+		window.theTKTitleObserver.disconnect();
+	}
+	var q = [document.body];
+	var l = 1;
+	while (l > 0) {
+		var el = q[--l];
+		if (!el) continue;
+		q[l++] = el.nextSibling;
+		if (el.nodeType != 1) continue;
+		q[l++] = el.firstChild;
+		if (el.hasAttribute('data-tk-prev')) {
+			var txt = document.createTextNode(el.getAttribute('data-tk-prev'));
+			el.parentNode.insertBefore(txt, el);
+			el.parentNode.removeChild(el);
+		}
+	}
+}
+
+window.TKsetgf = function TKsetgf(year) {
+	window.TKconfig['gf'] = year;
+	deactivate_fbtk(); activate_fbtk();
+}
+
+window.TKsetup = function TKsetup(config) {
+	for (var k in config) {
+		if (!(k in window.TKconfig)) throw('Unknown key '+k);
+	}
+	for (var k in config) {
+		window.TKconfig[k] = config[k];
+	}
+	deactivate_fbtk(); activate_fbtk();
+}
+
+activate_fbtk();
