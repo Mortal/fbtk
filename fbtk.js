@@ -169,8 +169,11 @@ function make_title(o) {
 ///////////////////////////////////////////////////////////////////////////////
 // Callback generator for add_alias.
 ///////////////////////////////////////////////////////////////////////////////
-function insert_alias(str, prefixSVG) {
+function insert_alias(o) {
 	var cb = function (n, orig_string) {
+		var str = make_title(o);
+		var prefixSVG = o['title'] ? (/^FU/.exec(o['title']) ? 'FU' : o['title']) : (/^(T[0-9]*O|[GBO]?)EFUIT/.exec(o['nickname']) ? 'EFUIT' : '');
+
 		// TODO make sure the svg is not separated by a line break from the title.
 		if (svg[prefixSVG]) {
 			var before = document.createElement('span');
@@ -183,7 +186,6 @@ function insert_alias(str, prefixSVG) {
 		replaced.innerHTML = str;
 		n.parentNode.insertBefore(replaced, n);
 	};
-	cb.inserted_string = str;
 	return cb;
 }
 
@@ -196,9 +198,7 @@ function add_parsed_alias(o, origLine) {
 		console.log("Failed to parse input line: ["+origLine+"]");
 		return;
 	}
-	var title = make_title(o);
-	var prefixSVG = o['title'] ? (/^FU/.exec(o['title']) ? 'FU' : o['title']) : '';
-	add_alias(o['name'], insert_alias(title, prefixSVG));
+	add_alias(o['name'], insert_alias(o));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
