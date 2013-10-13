@@ -207,8 +207,11 @@ function add_parsed_alias(o, origLine) {
 function r(n) {
 	if (n.nodeType == 1) {
 		// Recurse through all child nodes of this DOM element.
-		for (var i = 0, l = n.childNodes.length; i < l; ++i) {
-			r(n.childNodes[i]);
+		var c = n.firstChild;
+		while (c) {
+			var n = c.nextSibling;
+			r(c);
+			c = n;
 		}
 	} else if (n.nodeType == 3) {
 		// We are in a DOM text node.
