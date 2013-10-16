@@ -287,6 +287,99 @@ function add_aliases(input) {
 	parse_aliases(input, add_parsed_alias);
 }
 
+function activate_fbtk() {
+	compute_alias_regexp();
+	search_for_names(document.body);
+
+	if (window.theTKTitleObserver) {
+		window.theTKTitleObserver.disconnect();
+	}
+
+	window.theTKTitleObserver = new MutationObserver(function (mutations) {
+		for (var i = 0, l = mutations.length; i < l; ++i) {
+			var m = mutations[i];
+			search_for_names(m.target);
+		}
+	});
+
+	window.theTKTitleObserver.observe(document.body, {
+		'childList': true,
+		'characterData': true,
+		'subtree': true
+	});
+}
+
+function deactivate_fbtk() {
+	if (window.theTKTitleObserver) {
+		window.theTKTitleObserver.disconnect();
+		window.theTKTitleObserver = null;
+	}
+	var q = [document.body];
+	var l = 1;
+	while (l > 0) {
+		var el = q[--l];
+		if (!el) continue;
+		q[l++] = el.nextSibling;
+		if (el.nodeType != 1) continue;
+		q[l++] = el.firstChild;
+		if (el.hasAttribute('data-tk-prev')) {
+			var txt = document.createTextNode(el.getAttribute('data-tk-prev'));
+			el.parentNode.insertBefore(txt, el);
+			el.parentNode.removeChild(el);
+		}
+	}
+}
+
+function toggle_fbtk() {
+	if (window.theTKTitleObserver) deactivate_fbtk();
+	else activate_fbtk();
+}
+
+function toggle_fu_prefix() {
+	window['TKconfig']['FUprefix'] = !TK('FUprefix');
+	deactivate_fbtk(); activate_fbtk();
+}
+
+window.TKsetgf = function TKsetgf(year) {
+	window['TKconfig']['gf'] = year;
+	deactivate_fbtk(); activate_fbtk();
+}
+
+window.TKsetup = function TKsetup(config) {
+	for (var k in config) {
+		if (!(k in window['TKconfig'])) throw('Unknown key '+k);
+	}
+	for (var k in config) {
+		window['TKconfig'][k] = config[k];
+	}
+	deactivate_fbtk(); activate_fbtk();
+}
+
+function tk_keypress(e) {
+	if (!e.target || e.target.nodeType != 1) return true;
+	var tgt = e.target;
+	var tag = tgt.tagName.toLowerCase();
+	if (tag == 'textarea' || tag == 'input' || tgt.isContentEditable) return true;
+	var cc = e.charCode;
+	var gf = TK('gf');
+	if (cc == 45) // minus
+		window.TKsetgf(gf-1);
+	else if (cc == 43) // plus
+		window.TKsetgf(gf+1);
+	else if (cc == 42) // asterisk
+		toggle_fbtk();
+	else if (cc == 47) // slash
+		toggle_fu_prefix();
+	else
+		return true;
+
+	e.stopPropagation();
+	e.preventDefault();
+	return false;
+}
+
+window.addEventListener('keypress', tk_keypress, false);
+
 
 var svg_style = 'style="height: 1em; width: 1.5em; margin-right: .3em"';
 
@@ -841,97 +934,4 @@ add_aliases(
 ''
 );
 
-function activate_fbtk() {
-	compute_alias_regexp();
-	search_for_names(document.body);
-
-	if (window.theTKTitleObserver) {
-		window.theTKTitleObserver.disconnect();
-	}
-
-	window.theTKTitleObserver = new MutationObserver(function (mutations) {
-		for (var i = 0, l = mutations.length; i < l; ++i) {
-			var m = mutations[i];
-			search_for_names(m.target);
-		}
-	});
-
-	window.theTKTitleObserver.observe(document.body, {
-		'childList': true,
-		'characterData': true,
-		'subtree': true
-	});
-}
-
-function deactivate_fbtk() {
-	if (window.theTKTitleObserver) {
-		window.theTKTitleObserver.disconnect();
-		window.theTKTitleObserver = null;
-	}
-	var q = [document.body];
-	var l = 1;
-	while (l > 0) {
-		var el = q[--l];
-		if (!el) continue;
-		q[l++] = el.nextSibling;
-		if (el.nodeType != 1) continue;
-		q[l++] = el.firstChild;
-		if (el.hasAttribute('data-tk-prev')) {
-			var txt = document.createTextNode(el.getAttribute('data-tk-prev'));
-			el.parentNode.insertBefore(txt, el);
-			el.parentNode.removeChild(el);
-		}
-	}
-}
-
-function toggle_fbtk() {
-	if (window.theTKTitleObserver) deactivate_fbtk();
-	else activate_fbtk();
-}
-
-function toggle_fu_prefix() {
-	window['TKconfig']['FUprefix'] = !TK('FUprefix');
-	deactivate_fbtk(); activate_fbtk();
-}
-
-window.TKsetgf = function TKsetgf(year) {
-	window['TKconfig']['gf'] = year;
-	deactivate_fbtk(); activate_fbtk();
-}
-
-window.TKsetup = function TKsetup(config) {
-	for (var k in config) {
-		if (!(k in window['TKconfig'])) throw('Unknown key '+k);
-	}
-	for (var k in config) {
-		window['TKconfig'][k] = config[k];
-	}
-	deactivate_fbtk(); activate_fbtk();
-}
-
 activate_fbtk();
-
-function tk_keypress(e) {
-	if (!e.target || e.target.nodeType != 1) return true;
-	var tgt = e.target;
-	var tag = tgt.tagName.toLowerCase();
-	if (tag == 'textarea' || tag == 'input' || tgt.isContentEditable) return true;
-	var cc = e.charCode;
-	var gf = TK('gf');
-	if (cc == 45) // minus
-		window.TKsetgf(gf-1);
-	else if (cc == 43) // plus
-		window.TKsetgf(gf+1);
-	else if (cc == 42) // asterisk
-		toggle_fbtk();
-	else if (cc == 47) // slash
-		toggle_fu_prefix();
-	else
-		return true;
-
-	e.stopPropagation();
-	e.preventDefault();
-	return false;
-}
-
-window.addEventListener('keypress', tk_keypress, false);
