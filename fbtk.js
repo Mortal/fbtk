@@ -259,6 +259,7 @@ function add_parsed_alias(o, origLine) {
 function search_for_names(n) {
 	var to_visit = [n];
 	var l = 1;
+	var first = true;
 	while (l > 0) {
 		var n = to_visit[--l];
 		if (n.nodeType == 1) {
@@ -288,29 +289,60 @@ function search_for_names(n) {
 				// before `n` and replace `n` with `c`.
 
 				// Insert (possibly empty) text node `a` before `n`:
+				var prev = n.previousSibling;
 				var before = document.createTextNode(n.nodeValue.substring(0, o.index));
-				n.parentNode.insertBefore(before, n);
-				var next = before.nextSibling;
+				if (!first) n.parentNode.insertBefore(before, n);
+				var next = n;
 
 				// Insert nodes `f(b)` before n (might be a no-op if f(b) is empty):
-				aliases.replacements[o[0]](n, o[0]);
+				if (aliases.replacements[o[0]](n, o[0]) === false) {
+					if (first) {
+						// Nothing was inserted and nothing has been done yet.
+					} else {
+						// Nothing was inserted, but we previously changed something.
+						n.parentNode.insertBefore(document.createTextNode(o[0]), n);
+					}
+				} else {
+					if (first) {
+						// The replacement inserted something but we didn't insert `before`.
+						var afterprev = ((prev === null)
+							? n.parentNode.firstChild
+							: prev = prev.nextSibling);
+						if (afterprev === null) {
+							n.parentNode.appendChild(before);
+						} else {
+							n.parentNode.insertBefore(before, afterprev);
+						}
+						first = false;
+					} else {
+						// The replacement inserted something and we already inserted `before`.
+					}
+				}
 
 				var i = before.nextSibling;
 				var oldText = o[0];
 				while (i && i != next) {
-					i.setAttribute('data-tk-prev', oldText);
+					if (i.setAttribute)
+						i.setAttribute('data-tk-prev', oldText);
 					oldText = '';
 					i = i.nextSibling;
 				}
 
 				// Set the text of the `n` node to the remaining (maybe empty) text `c`:
-				n.nodeValue =
-					n.nodeValue.substring(o.index + o[0].length, n.nodeValue.length);
+				if (!first) {
+					n.nodeValue =
+						n.nodeValue.substring(o.index + o[0].length, n.nodeValue.length);
+				}
 
 				// Find the next occurrence:
 				o = alias_regexp.exec(n.nodeValue);
 			}
 		}
+	}
+	if (first) {
+		console.log("Nothing was changed");
+	} else {
+		console.log("Something was changed");
 	}
 }
 
