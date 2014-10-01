@@ -353,6 +353,23 @@ function add_aliases(input) {
 	parse_aliases(input, add_parsed_alias);
 }
 
+function node_depth(v) {
+	var d = 0;
+	while (v) { ++d; v = v.parentNode; }
+	return d;
+}
+
+function lowest_common_ancestor(u, v) {
+	var du = node_depth(u), dv = node_depth(v);
+	while (du > dv) { u = u.parentNode; --du; }
+	while (dv > du) { v = v.parentNode; --dv; }
+	while (u != v && du > 0 && dv > 0) {
+		u = u.parentNode; --du;
+		v = v.parentNode; --dv;
+	}
+	return u;
+}
+
 function activate_fbtk() {
 	compute_alias_regexp();
 	search_for_names(document.body);
@@ -362,10 +379,16 @@ function activate_fbtk() {
 	}
 
 	window.theTKTitleObserver = new MutationObserver(function (mutations) {
-		for (var i = 0, l = mutations.length; i < l; ++i) {
-			var m = mutations[i];
-			search_for_names(m.target);
+		if (mutations.length == 0) return;
+		var p = mutations[0].target;
+		//var depths = [node_depth(p)];
+		for (var i = 1, l = mutations.length; i < l; ++i) {
+			p = lowest_common_ancestor(p, mutations[i].target);
+			//depths.push(node_depth(mutations[i].target));
 		}
+		//depths.sort();
+		//console.log("Node depths ("+depths.join(', ')+") combined to depth "+node_depth(p));
+		search_for_names(p);
 	});
 
 	window.theTKTitleObserver.observe(document.body, {
