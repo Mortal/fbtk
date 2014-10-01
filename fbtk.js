@@ -115,8 +115,35 @@ function add_alias(source, destination) {
 	aliases.replacements[source] = destination;
 }
 
+function like_button(s) {
+	return function like_button_cb(ip, txt) {
+		if (ip.parentNode.classList.contains('UFILikeLink')) {
+			ip.parentNode.insertBefore(document.createTextNode(s), ip);
+		} else {
+			return false;
+		}
+	};
+}
+
+function like_verb(s) {
+	return function like_verb_cb(ip, txt) {
+		if (ip.parentNode.parentNode.parentNode.classList.contains('UFILikeSentenceText')) {
+			ip.parentNode.insertBefore(document.createTextNode(s), ip);
+		} else {
+			return false;
+		}
+	};
+}
+
 add_alias('TÅGEKAMMERET', insert_TK_html(html_TKET));
 add_alias('TÅGEKAMMER', insert_TK_html(html_TK));
+//add_alias('Like', like_button('Find this strange'));
+//add_alias('Unlike', like_button('No longer find this strange'));
+//add_alias('likes this', like_verb('finds this strange'));
+//add_alias('like this', like_verb('find this strange'));
+//add_alias('Synes godt om', like_button('Finder det unaturligt'));
+//add_alias('Synes ikke længere godt om', like_button('Finder det ikke længere unaturligt'));
+//add_alias('synes godt om dette', like_verb('finder dette unaturligt'));
 
 var alias_regexp;
 function compute_alias_regexp() {
