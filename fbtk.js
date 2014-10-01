@@ -158,7 +158,7 @@ function parse_alias(line) {
 	var prefixed = /^(\d+) +([^ ]+) +(.*)/.exec(line);
 	if (prefixed) {
 		return {'name': prefixed[3],
-			'year': prefixed[1],
+			'year': parseInt(prefixed[1]),
 			'title': prefixed[2]};
 	}
 	var hangaround = /^"([^"]*)" +(.*)/.exec(line);
