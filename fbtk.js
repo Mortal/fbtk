@@ -218,6 +218,13 @@ function insert_alias(o) {
 	var cb = function (n, orig_string) {
 		var str = make_title(o);
 		var prefixSVG = o['title'] ? (/^FU/.exec(o['title']) ? 'FU' : o['title']) : (/^(T[0-9]*O|[GBO]?)EFUIT/.exec(o['nickname']) ? 'EFUIT' : '');
+		if (o['title'] == 'KASS' && o['year'] < 2014) {
+			prefixSVG = 'INKA';
+		}
+		if (o['title'] == 'KASS') {
+			// Until we get the new KASS logo.
+			prefixSVG = 'INKA';
+		}
 
 		// TODO make sure the svg is not separated by a line break from the title.
 		if (svg[prefixSVG]) {
@@ -520,7 +527,7 @@ svg_style+' version="1.1">'+
 ''
 );
 
-svg['KASS'] = (
+svg['INKA'] = (
 '<svg xmlns="http://www.w3.org/2000/svg" version="1.1" '+
 svg_style+' viewBox="0 0 847.5 850">'+
 '<g transform="matrix(1.25,0,0,-1.25,0,850)">'+
