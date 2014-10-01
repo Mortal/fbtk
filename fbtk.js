@@ -893,20 +893,21 @@ svg_style+' version="1.1">'+
 );
 
 add_aliases(
+'1999 FORM Jacob Sherson\n'+
 '2002 FORM Nikolaj Thomas Zinner\n'+
 '2002 KASS Rasmus Villemoes\n'+
 '2003 CERM Sune S. Thomsen\n'+
 '2004 VC   Christina Koch Perry\n'+
 '2005 CERM Ole Søe Sørensen\n'+
 '2005 FORM Dan Beltoft\n'+
-'2005 KASS Tanja Kragbæk\n'+
+'2005 KASS Tanja Kragbæk Vilhelmsen\n'+
 '2005 VC   Rasmus Ragnvald Olofsson\n'+
 '2006 CERM Tine Vraast-Thomsen\n'+
 '2006 FORM Michael Volf Henneberg\n'+
 '2006 KASS Lars Thorhauge\n'+
 '2006 NF   Aslak Thorndahl Lindballe\n'+
 '2006 PR   Mia Dyhr Christensen\n'+
-'2006 SEKR Lasse Vilhelmsen\n'+
+'2006 SEKR Lasse Kragbæk Vilhelmsen\n'+
 '2006 VC   Martin Studsgaard Christensen\n'+
 '2007 CERM Johan Sigfred Abildskov\n'+
 '2007 FORM Jan Munksgård Baggesen\n'+
@@ -930,6 +931,8 @@ add_aliases(
 '2010 KASS Torben Muldvang Andersen\n'+
 '2010 NF   Morten Jensen\n'+
 '2010 PR   Kristoffer L. Winge\n'+
+'2010 PR   Kristoffer Winge\n'+
+'2010 PR   Kristoffer Larsen Winge\n'+
 '2010 SEKR Maria Kragelund\n'+
 '2010 VC   Morten Rasmussen\n'+
 '2011 CERM Sabrina Tang Christensen\n'+
@@ -953,6 +956,14 @@ add_aliases(
 '2013 PR   Mette Lysgaard Schulz\n'+
 '2013 SEKR Karina Sunds Nielsen\n'+
 '2013 VC   Mathias Dannesbo\n'+
+'2014 CERM Jonas Kielsholm\n'+
+'2014 FORM Martin Sand\n'+
+'2014 INKA Henrik Lund Mortensen\n'+
+'2014 KASS Mathias Jaquet Mavraganis\n'+
+'2014 NF   Jacob Schnedler\n'+
+'2014 PR   Alexandra Fabricius Porsgaard\n'+
+'2014 SEKR Camilla Pedersen\n'+
+'2014 VC   Peter Matzen\n'+
 '2005 FUJA Jane Drejer\n'+
 '2006 FUZA Sarah Zakarias\n'+
 '2007 FUAN Kenneth Sejdenfaden Bøgh\n'+
@@ -961,23 +972,22 @@ add_aliases(
 '2008 FUAN Andreas Sand Gregersen\n'+
 '2008 FUNÉ René Søndergaard\n'+
 '2008 FURU Jesper Unna\n'+
+'2009 FUBR Rune Bjerring Haugaard\n'+
 '2009 FUBS Sandra Pedersen\n'+
+'2009 FUBS Sandra Bleuenn Picard Svejgaard Pedersen\n'+
+'2009 FUBS Sandra Bleuenn Picard S. Pedersen\n'+
 '2009 FUHN Mette Hansen\n'+
 '2009 FUØL Carina Kjeldahl Møller\n'+
 '2009 FUØR Signe Grønborg\n'+
 '2010 FUAN Andreas Nikolai Kyed Bovin\n'+
 '2010 FUNI Asbjørn Stensgaard\n'+
 '2010 FUPH Pernille Hornemann Jensen\n'+
-'2010 FUUL Camilla Pedersen\n'+
 '2010 FURØ Lærke Rønlev Reinholdt\n'+
 '2011 FUFR Anders Friis Jensen\n'+
 '2011 FUIØ Mathilde Biørn Madsen\n'+
 '2011 FULA Camilla Skree Sørensen\n'+
 '2011 FUNU Andreas Bendix Nuppenau\n'+
 '2011 FURI Frederik Jerløv\n'+
-'2011 FURT Martin Sand\n'+
-'2012 FUAN Henrik Lund Mortensen\n'+
-'2012 FUCO Jacob Schnedler\n'+
 '2012 FULI Line Bjerg Sørensen\n'+
 '2012 FULO Lone Koed\n'+
 '2012 FULS Sara Poulsen\n'+
@@ -985,15 +995,27 @@ add_aliases(
 '2012 FUMY Rasmus Thygesen\n'+
 '2012 FUZU Christian Bonar Zeuthen\n'+
 '2013 FUAN Dennis Krongaard Mikkelsen\n'+
-'2013 FUAX Alexandra Fabricius Porsgaard\n'+
 '2013 FUBI Benedikte Sofie Werk\n'+
 '2013 FUET Oliver Emil Harritslev Christensen\n'+
 '2013 FUGR Asger Agergaard\n'+
-'2013 FUNK Jonas Kielsholm\n'+
 '2013 FUSE Mie Christine Wilhelmsen\n'+
 '2013 FUST Amalie Louise Stokholm\n'+
 '2013 FUTN Anja T Nielsen\n'+
 '2013 FUUS Rasmus Korsgaard Kjeldgaard\n'+
+'2014 FUDR Anne Dorte Rafn Spangsberg\n'+
+'2014 FUAT Anne Kristine Tarp\n'+
+'2014 FUAT Anne Tarp\n'+
+'2014 FUIS Astrid Christiansen\n'+
+'2014 FUIK Frederik Riis Nielsen\n'+
+'2014 FUFF Helle Weinkouff Petersen\n'+
+'2014 FUAN Isaac Appelqvist Løge\n'+
+'2014 FUAN Isaac Appelquist Løge\n'+
+'2014 FUØN Janne Højmark Mønster\n'+
+'2014 FUON Jonas Joachim Junker Zarling\n'+
+'2014 FUON Jonas Zarling\n'+
+'2014 FUSØ Søren Kenneth Højgaard Sørensen\n'+
+'2014 FUWI William Heyman Krill\n'+
+'2014 FUWI William Heyman\n'+
 '"ADAM"       Adam Etches\n'+
 '"Nissen"     Anders Hauge Nissen\n'+
 '"Metal Bo"   Bo Mortensen\n'+
@@ -1003,7 +1025,6 @@ add_aliases(
 '"EFUIT"      Philip Tchernavskij\n'+
 '"GEFUIT"     Lauge Mølgaard Hoyer\n'+
 '"Have"       Martin Anker Have\n'+
-'"Mavraganis" Mathias Jaquet Mavraganis\n'+
 '"Vester"     Mikkel Bak Vester\n'+
 '"M3"         Morten Schaumburg\n'+
 '"Cramer"     Morten \'Cramer\' Nikolaj Pløger\n'+
