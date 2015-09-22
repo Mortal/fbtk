@@ -1,33 +1,71 @@
 // vim:set fileencoding=utf-8 sw=2 ts=2 sts=2:
-// Author: Mathias Rav
-// Date: May 22, 2013
 // encoding test: rød grød med fløde æ ø å
+// ==UserScript==
+// @name         TK-navne på Facebook
+// @author       Mathias Rav
+// @namespace    http://tyilo.com/
+// @description  Ændrer folks navne til hvad de er kendt som på TÅGEKAMMERET
+// @include      https://www.facebook.com/*
+// @version      0.1
+// @run-at       document-end
+// ==/UserScript==
+
+var C = ('<span style="font-family: &quot;lucida grande&quot;,tahoma,verdana,arial,sans-serif;">'
++'\u2102</span>');
+window['TKconfig'] = ({
+	// We don't write RemToR anywhere
+	//'epsilon': 'e',
+	// Dollar sign used to write KA$$
+	'dollar': '$',
+	// C used to write CERM
+	'cermC': C,
+	// C used to write VC
+	'vcC': C,
+	// Whether exponents should be written as superscripts
+	'eksponent': true,
+	// From which year prefixes are computed
+	'gf': 2015,
+	// True if we should write a prefix in front of a FU title
+	'FUprefix': false
+});
+
+function TK(key) {
+	return window['TKconfig'][key];
+}
 
 function year_prefix(year) {
-	year = 2012 - year;
+	year = TK('gf') - year;
 	var prefixes = ['', 'G', 'B', 'O', 'TO'];
 	if (0 <= year && year < prefixes.length) {
 		return prefixes[year];
 	}
-	var exponent = (year - 3)+'';
+	if (year == -1) return 'K';
+	var negative = false;
+	var exponent = year - 3;
+	if (year < 0) { exponent = -year; negative = true; }
+	exponent = exponent+'';
 	var exponentString = '';
-	var s = ['⁰', '¹', '²', '³', '⁴', '⁵', '⁶', '⁷', '⁸', '⁹']
-	for (var i = 0; i < exponent.length; ++i)
-		exponentString += s[exponent.charCodeAt(i) - 48];
-	return 'T'+exponentString+'O';
+	if (TK('eksponent')) {
+		var s = ['⁰', '¹', '²', '³', '⁴', '⁵', '⁶', '⁷', '⁸', '⁹']
+		for (var i = 0; i < exponent.length; ++i)
+			exponentString += s[exponent.charCodeAt(i) - 48];
+	} else {
+		exponentString = exponent;
+	}
+	return negative ? 'K'+exponentString : 'T'+exponentString+'O';
 }
 
 function title_bling(title) {
-	if (title == "KASS") return "KA$$";
-	if (title == 'CERM') return "\u2102ERM"; // complex C
-	if (title == 'VC') return "V\u2102";
+	if (title == "KASS") return "KA" + TK('dollar') + TK('dollar');
+	if (title == 'CERM') return TK('cermC') + "ERM";
+	if (title == 'VC') return "V" + TK('vcC');
 
 	return title;
 }
 
 var svg = {};
 
-var TK = (
+var html_TK = (
 '<span '+
 'style="vertical-align: -0.4pt">T</span><span '+
 'style="font-weight: bold">&Aring;</span>G<span '+
@@ -38,7 +76,7 @@ var TK = (
 'style="vertical-align: -0.6pt">M</span><span '+
 'style="display: inline-block; transform: rotate(-8deg); -webkit-transform: '+
 'rotate(-8deg); font-weight: bold">M</span>ER');
-var TKET = TK + '<span style="vertical-align: 0.6pt">ET</span>';
+var html_TKET = html_TK + '<span style="vertical-align: 0.6pt">ET</span>';
 
 ///////////////////////////////////////////////////////////////////////////////
 // Callback generator for add_alias.
@@ -56,7 +94,7 @@ function insert_TK_html(h) {
 	};
 }
 
-var aliases = {replacements: {}, targets: [], by_path: {}};
+var aliases = {'replacements': {}, 'targets': []};
 
 ///////////////////////////////////////////////////////////////////////////////
 // Add a text replacement.
@@ -72,20 +110,47 @@ function add_alias(source, destination) {
 	// non-ascii characters. I don't know how to do this for all
 	// characters, so give special treatment to those special letters.
 	// This appears to fix it for both Firefox 24 and Chromium 27.
-//	source = (source
-//		  .replace(/æ/g, '\xe6')
-//		  .replace(/ø/g, '\xf8')
-//		  .replace(/å/g, '\xe5')
-//		  .replace(/Æ/g, '\xc6')
-//		  .replace(/Ø/g, '\xd8')
-//		  .replace(/Å/g, '\xc5'));
+	source = (source
+		  .replace(/æ/g, '\xe6')
+		  .replace(/ø/g, '\xf8')
+		  .replace(/å/g, '\xe5')
+		  .replace(/Æ/g, '\xc6')
+		  .replace(/Ø/g, '\xd8')
+		  .replace(/Å/g, '\xc5'));
 
 	aliases.targets.push(source);
 	aliases.replacements[source] = destination;
 }
 
-add_alias('TÅGEKAMMERET', insert_TK_html(TKET));
-add_alias('TÅGEKAMMER', insert_TK_html(TK));
+function like_button(s) {
+	return function like_button_cb(ip, txt) {
+		if (ip.parentNode.classList.contains('UFILikeLink')) {
+			ip.parentNode.insertBefore(document.createTextNode(s), ip);
+		} else {
+			return false;
+		}
+	};
+}
+
+function like_verb(s) {
+	return function like_verb_cb(ip, txt) {
+		if (ip.parentNode.parentNode.parentNode.classList.contains('UFILikeSentenceText')) {
+			ip.parentNode.insertBefore(document.createTextNode(s), ip);
+		} else {
+			return false;
+		}
+	};
+}
+
+add_alias('TÅGEKAMMERET', insert_TK_html(html_TKET));
+add_alias('TÅGEKAMMER', insert_TK_html(html_TK));
+//add_alias('Like', like_button('Find this strange'));
+//add_alias('Unlike', like_button('No longer find this strange'));
+//add_alias('likes this', like_verb('finds this strange'));
+//add_alias('like this', like_verb('find this strange'));
+//add_alias('Synes godt om', like_button('Finder det unaturligt'));
+//add_alias('Synes ikke længere godt om', like_button('Finder det ikke længere unaturligt'));
+//add_alias('synes godt om dette', like_verb('finder dette unaturligt'));
 
 var alias_regexp;
 function compute_alias_regexp() {
@@ -97,26 +162,18 @@ compute_alias_regexp();
 // Parse input line to an object.
 ///////////////////////////////////////////////////////////////////////////////
 function parse_alias(line) {
-	var o = {};
 	var prefixed = /^(\d+) +([^ ]+) +(.*)/.exec(line);
-	var hangaround = /^"([^"]*)" +(.*)/.exec(line);
 	if (prefixed) {
-		o['name'] = prefixed[3];
-		o['year'] = prefixed[1];
-		o['title'] = prefixed[2];
-	} else if (hangaround) {
-		o['name'] = hangaround[2];
-		o['nickname'] = hangaround[1];
-	} else {
-		return null;
+		return {'name': prefixed[3],
+			'year': parseInt(prefixed[1]),
+			'title': prefixed[2]};
 	}
-	var re = /^(path|uid)=([^ ]*) (.*)/;
-	var m;
-	while (m = re.exec(o['name'])) {
-		o[m[1]] = m[2];
-		o['name'] = m[3];
+	var hangaround = /^"([^"]*)" +(.*)/.exec(line);
+	if (hangaround) {
+		return {'name': hangaround[2],
+			'nickname': hangaround[1]};
 	}
-	return o;
+	return null;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -141,34 +198,43 @@ function make_title(o) {
 	var fancy = title_bling(o['title']);
 	if ('year' in o) {
 		var year = o['year'];
+		var addPrefix = false;
 		if (title == 'FUAN') {
-			fancy = year_prefix(year) + fancy;
+			addPrefix = true;
+		} else if (title == 'FU') {
+			// Unnamed FU (e.g. KFU); always show prefix
+			addPrefix = true;
 		} else if (title.substring(0, 2) != 'FU') {
-			fancy = year_prefix(year) + fancy;
+			// BEST title
+			addPrefix = true;
 		} else {
-			// FU; no prefix
+			// Ordinary FU
+			addPrefix = TK('FUprefix');
+		}
+		if (addPrefix) {
+			fancy = year_prefix(year) + fancy;
 		}
 	}
 	return fancy;
 }
 
-function icon_eligible(n) {
-	return true;
-	while (n) {
-		if (n.classList
-		    && (n.classList.contains("cover")
-			|| n.classList.contains("uiContextualLayer"))) return true;
-		n = n.parentNode;
-	}
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // Callback generator for add_alias.
 ///////////////////////////////////////////////////////////////////////////////
-function insert_alias(str, prefixSVG) {
-	return function (n, orig_string) {
+function insert_alias(o) {
+	var cb = function (n, orig_string) {
+		var str = make_title(o);
+		var prefixSVG = o['title'] ? (/^FU/.exec(o['title']) ? 'FU' : o['title']) : (/^(T[0-9]*O|[GBO]?)EFUIT/.exec(o['nickname']) ? 'EFUIT' : '');
+		if (o['title'] == 'KASS' && o['year'] < 2014) {
+			prefixSVG = 'INKA';
+		}
+		if (o['title'] == 'KASS') {
+			// Until we get the new KASS logo.
+			prefixSVG = 'INKA';
+		}
+
 		// TODO make sure the svg is not separated by a line break from the title.
-		if (svg[prefixSVG] && icon_eligible(n)) {
+		if (svg[prefixSVG]) {
 			var before = document.createElement('span');
 			before.innerHTML = svg[prefixSVG];
 			n.parentNode.insertBefore(before, n);
@@ -176,9 +242,10 @@ function insert_alias(str, prefixSVG) {
 		var replaced = document.createElement('span');
 		replaced.title = orig_string;
 		replaced.className = 'tk_title';
-		replaced.textContent = str;
+		replaced.innerHTML = str;
 		n.parentNode.insertBefore(replaced, n);
 	};
+	return cb;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -187,115 +254,227 @@ function insert_alias(str, prefixSVG) {
 function add_parsed_alias(o, origLine) {
 	if (!o) {
 		// parse error
-		debugger;
 		console.log("Failed to parse input line: ["+origLine+"]");
 		return;
 	}
-	var title = make_title(o);
-	var prefixSVG = o['title'] ? (/^FU/.exec(o['title']) ? 'FU' : o['title']) : '';
-	var fn = insert_alias(title, prefixSVG);
-	add_alias(o['name'], fn);
-	if (o['path']) {
-		aliases.by_path[o['path']] = fn;
-		fn.path = o['path'];
-	}
+	add_alias(o['name'], insert_alias(o));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Recursively apply transformation to all text nodes in a DOM subtree.
 ///////////////////////////////////////////////////////////////////////////////
-function r(n) {
-	if (n.nodeType == 1) {
-		var href = n.tagName.toLowerCase() != 'a' ? ''
-			: (''+n.href).replace(/^https?:\/\/www\.facebook.com|.*/, '').replace(/\?.*/, '');
-		if (href && aliases.by_path[href]) {
-			var textOnly = true;
-			for (var c = n.firstChild; c != null; c = c.nextSibling) {
-				if (c.nodeType == 1) textOnly = false;
+function search_for_names(n) {
+	var to_visit = [n];
+	var l = 1;
+	var first = true;
+	while (l > 0) {
+		var n = to_visit[--l];
+		if (n.nodeType == 1) {
+			// Recurse through all child nodes of this DOM element.
+			var c = n.lastChild;
+			while (c) {
+				var n = c.previousSibling;
+				to_visit[l++] = c;
+				c = n;
 			}
-			if (textOnly) {
-				var before = n.textContent;
-				n.innerHTML = '';
-				var m = n.appendChild(document.createTextNode(''));
-				aliases.by_path[href](m, before);
+		} else if (n.nodeType == 3) {
+			// We are in a DOM text node.
+			// Replace every occurrence of a real name with an alias.
+			// If the node contains x substrings,
+			// we split this text node into 2x+1 parts.
+			var o = alias_regexp.exec(n.nodeValue);
+			while (o) {
+				// We currently have n.nodeValue == a+b+c,
+				// and b needs to be replaced with f(b).
+				// f(b) is not necessarily just a text string;
+				// it could be an arbitrary sequence of DOM nodes.
+				// Therefore, we split `n` into three parts:
+				// A text node containing `a`, the dom nodes `f(b)`,
+				// and a text node containing `c`.
+				// We have to recurse on `c` (the rest of the text),
+				// so in reality we just insert `a` and `f(b)`
+				// before `n` and replace `n` with `c`.
+
+				// Insert (possibly empty) text node `a` before `n`:
+				var prev = n.previousSibling;
+				var before = document.createTextNode(n.nodeValue.substring(0, o.index));
+				if (!first) n.parentNode.insertBefore(before, n);
+				var next = n;
+
+				// Insert nodes `f(b)` before n (might be a no-op if f(b) is empty):
+				if (aliases.replacements[o[0]](n, o[0]) === false) {
+					if (first) {
+						// Nothing was inserted and nothing has been done yet.
+					} else {
+						// Nothing was inserted, but we previously changed something.
+						n.parentNode.insertBefore(document.createTextNode(o[0]), n);
+					}
+				} else {
+					if (first) {
+						// The replacement inserted something but we didn't insert `before`.
+						var afterprev = ((prev === null)
+							? n.parentNode.firstChild
+							: prev = prev.nextSibling);
+						if (afterprev === null) {
+							n.parentNode.appendChild(before);
+						} else {
+							n.parentNode.insertBefore(before, afterprev);
+						}
+						first = false;
+					} else {
+						// The replacement inserted something and we already inserted `before`.
+					}
+				}
+
+				var i = before.nextSibling;
+				var oldText = o[0];
+				while (i && i != next) {
+					if (i.setAttribute)
+						i.setAttribute('data-tk-prev', oldText);
+					oldText = '';
+					i = i.nextSibling;
+				}
+
+				// Set the text of the `n` node to the remaining (maybe empty) text `c`:
+				if (!first) {
+					n.nodeValue =
+						n.nodeValue.substring(o.index + o[0].length, n.nodeValue.length);
+				}
+
+				// Find the next occurrence:
+				o = alias_regexp.exec(n.nodeValue);
 			}
-			return;
-		}
-		// Recurse through all child nodes of this DOM element.
-		for (var i = 0, l = n.childNodes.length; i < l; ++i) {
-			r(n.childNodes[i]);
-		}
-	} else if (n.nodeType == 3) {
-		// We are in a DOM text node.
-		// Replace every occurrence of a real name with an alias.
-		// If the node contains x substrings,
-		// we split this text node into 2x+1 parts.
-		var o = alias_regexp.exec(n.nodeValue);
-		while (o) {
-			// We currently have n.nodeValue == a+b+c,
-			// and b needs to be replaced with f(b).
-			// f(b) is not necessarily just a text string;
-			// it could be an arbitrary sequence of DOM nodes.
-			// Therefore, we split `n` into three parts:
-			// A text node containing `a`, the dom nodes `f(b)`,
-			// and a text node containing `c`.
-			// We have to recurse on `c` (the rest of the text),
-			// so in reality we just insert `a` and `f(b)`
-			// before `n` and replace `n` with `c`.
-
-			var replacer = aliases.replacements[o[0]];
-
-			if (n.parentNode.tagName.toLowerCase() == 'a'
-					&& replacer.path
-					&& (''+n.parentNode.href)
-						.replace(/^https?:\/\/www\.facebook.com|.*/, '')
-						.replace(/\?.*/, '') != replacer.path)
-			{
-				break;
-			}
-
-			// Insert (possibly empty) text node `a` before `n`:
-			var before = document.createTextNode(n.nodeValue.substring(0, o.index));
-			if (o.index != 0) n.parentNode.insertBefore(before, n);
-
-			// Insert nodes `f(b)` before n (might be a no-op if f(b) is empty):
-			replacer(n, o[0]);
-
-			// Set the text of the `n` node to the remaining (maybe empty) text `c`:
-			n.nodeValue =
-				n.nodeValue.substring(o.index + o[0].length, n.nodeValue.length);
-
-			// Find the next occurrence:
-			o = alias_regexp.exec(n.nodeValue);
 		}
 	}
-}
-
-if (window.theTKTitleObserver) {
-	window.theTKTitleObserver.disconnect();
-}
-
-window.theTKTitleObserver = new MutationObserver(function (mutations) {
-	for (var i = 0, l = mutations.length; i < l; ++i) {
-		var m = mutations[i];
-		r(m.target);
+	if (first) {
+		console.log("Nothing was changed");
+	} else {
+		console.log("Something was changed");
 	}
-});
-
-window.theTKTitleObserver.observe(document.body, {
-	'childList': true,
-	'characterData': true,
-	'subtree': true
-});
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Add aliases from input alias specification.
 ///////////////////////////////////////////////////////////////////////////////
 function add_aliases(input) {
 	parse_aliases(input, add_parsed_alias);
-	compute_alias_regexp();
-	r(document.body);
 }
+
+function node_depth(v) {
+	var d = 0;
+	while (v) { ++d; v = v.parentNode; }
+	return d;
+}
+
+function lowest_common_ancestor(u, v) {
+	var du = node_depth(u), dv = node_depth(v);
+	while (du > dv) { u = u.parentNode; --du; }
+	while (dv > du) { v = v.parentNode; --dv; }
+	while (u != v && du > 0 && dv > 0) {
+		u = u.parentNode; --du;
+		v = v.parentNode; --dv;
+	}
+	return u;
+}
+
+function activate_fbtk() {
+	compute_alias_regexp();
+	search_for_names(document.body);
+
+	if (window.theTKTitleObserver) {
+		window.theTKTitleObserver.disconnect();
+	}
+
+	window.theTKTitleObserver = new MutationObserver(function (mutations) {
+		if (mutations.length == 0) return;
+		var p = mutations[0].target;
+		//var depths = [node_depth(p)];
+		for (var i = 1, l = mutations.length; i < l; ++i) {
+			p = lowest_common_ancestor(p, mutations[i].target);
+			//depths.push(node_depth(mutations[i].target));
+		}
+		//depths.sort();
+		//console.log("Node depths ("+depths.join(', ')+") combined to depth "+node_depth(p));
+		search_for_names(p);
+	});
+
+	window.theTKTitleObserver.observe(document.body, {
+		'childList': true,
+		'characterData': true,
+		'subtree': true
+	});
+}
+
+function deactivate_fbtk() {
+	if (window.theTKTitleObserver) {
+		window.theTKTitleObserver.disconnect();
+		window.theTKTitleObserver = null;
+	}
+	var q = [document.body];
+	var l = 1;
+	while (l > 0) {
+		var el = q[--l];
+		if (!el) continue;
+		q[l++] = el.nextSibling;
+		if (el.nodeType != 1) continue;
+		q[l++] = el.firstChild;
+		if (el.hasAttribute('data-tk-prev')) {
+			var txt = document.createTextNode(el.getAttribute('data-tk-prev'));
+			el.parentNode.insertBefore(txt, el);
+			el.parentNode.removeChild(el);
+		}
+	}
+}
+
+function toggle_fbtk() {
+	if (window.theTKTitleObserver) deactivate_fbtk();
+	else activate_fbtk();
+}
+
+function toggle_fu_prefix() {
+	window['TKconfig']['FUprefix'] = !TK('FUprefix');
+	deactivate_fbtk(); activate_fbtk();
+}
+
+window.TKsetgf = function TKsetgf(year) {
+	window['TKconfig']['gf'] = year;
+	deactivate_fbtk(); activate_fbtk();
+}
+
+window.TKsetup = function TKsetup(config) {
+	for (var k in config) {
+		if (!(k in window['TKconfig'])) throw('Unknown key '+k);
+	}
+	for (var k in config) {
+		window['TKconfig'][k] = config[k];
+	}
+	deactivate_fbtk(); activate_fbtk();
+}
+
+function tk_keypress(e) {
+	if (!e.target || e.target.nodeType != 1) return true;
+	var tgt = e.target;
+	var tag = tgt.tagName.toLowerCase();
+	if (tag == 'textarea' || tag == 'input' || tgt.isContentEditable) return true;
+	var cc = e.charCode;
+	var gf = TK('gf');
+	if (cc == 45) // minus
+		window.TKsetgf(gf-1);
+	else if (cc == 43) // plus
+		window.TKsetgf(gf+1);
+	else if (cc == 42) // asterisk
+		toggle_fbtk();
+	else if (cc == 47) // slash
+		toggle_fu_prefix();
+	else
+		return true;
+
+	e.stopPropagation();
+	e.preventDefault();
+	return false;
+}
+
+window.addEventListener('keypress', tk_keypress, false);
 
 
 var svg_style = 'style="height: 1em; width: 1.5em; margin-right: .3em"';
@@ -410,7 +589,7 @@ svg_style+' version="1.1">'+
 ''
 );
 
-svg['KASS'] = (
+svg['INKA'] = (
 '<svg xmlns="http://www.w3.org/2000/svg" version="1.1" '+
 svg_style+' viewBox="0 0 847.5 850">'+
 '<g transform="matrix(1.25,0,0,-1.25,0,850)">'+
@@ -667,118 +846,222 @@ svg_style+' version="1.1">'+
 ''
 );
 
+svg['EFUIT'] = (
+'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 343.16913 450.31761" '+
+svg_style+' version="1.1">'+
+'<g transform="translate(-50.327881,84.357572)"><path d="m122.41,0c-2.6908-0.'+
+'038897-5.0538,1.1647-6.9375,4.4688-12.455,28.882-22.757,57.524-35.719,86.125'+
+'-21.296,57.528-40.644,112.61-60.688,170.62-12.302,32.659-12.389,39.071-16.25'+
+',56.549,4.4194,30.936,13.299,42.264,40.219,42.264l-19.901-0.80353,73.838,0.8'+
+'0353c4.8648,0.13429,9.6058,2.3229,13.219,5.4688,0,0,45.017,51.552,45.156,51.'+
+'719,0.18044,0.20704,0.24094,0.24549,0.21875,0.21875,6.3974,6.5773,16.338,12.'+
+'125,25.812,12.125l11.564-0.40177v20.754l57.899,0.40177v-58.798l-58.3-0.40177'+
+'v23.567s13.908-0.43297-11.599-0.43297c-4.8785-0.12133-9.5964-2.322-13.219-5.'+
+'4688l-42.594-48.75,146.74-0.80353v42.026l74.119-49.651-74.119-58.521v50.833l'+
+'-200.24,0.80353,42.594-48.75c3.624-3.1468,8.3723-5.3465,13.25-5.4688,19.732,'+
+'0,25.715-1.1973,30.028-1.2053,4.6283,16.41,15.726,26.772,34.037,27.102,16.56'+
+'9,0.29853,34.644-18.91,33.112-33.954-1.8911-18.575-19.601-38.468-33.915-38.2'+
+'36-16.719,0.27158-33.317,21.162-32.832,30.178l-30.023,0.80353c-9.5757,0.2562'+
+'8-19.611,5.7007-26,12.375-0.13528,0.16482-46.393,45.661-46.393,45.661-5.2234'+
+',7.5616-14.804,8.1551-19.678,8.2811-22.097-20.892-5.112-50.357-5.112-50.357,'+
+'16.689-42.309,28.042-84.628,46.027-126.46,11.534-7.4191,26.446,14.21,36.219,'+
+'22.031,17.904,18.706,43.54,25.116,67.844,30.688,26.443,5.555,39.951,31.787,6'+
+'3.062,43.094,13.277,4.6063,30.693,15.012,43.531,10.312,17.728-31.462,29.231-'+
+'65.905,39.656-100.34,3.3824-16.576,18.131-31.597,18.688-47.406-30.259-4.292-'+
+'53.147-25.759-75.875-44.156-12.36-14.238-31.35-17.228-48.64-21.425-29.48-5.8'+
+'31-46.78-32.65-71.53-46.969-8.37,0.904-19.21-10.383-27.28-10.5zm9.0312,20.96'+
+'9c21.625,3.3824,31.729,18.844,48.531,30.906,19.303,18.157,49.842,15.925,71.9'+
+'06,28.406,26.131,19.984,42.213,42.441,75.75,49.562,6.3028,9.2293-10.205,21.5'+
+'75-12.312,35.031-11.049,35.379-14.853,60-33.562,92.25-7.0171,4.0482-11.725-2'+
+'.2049-19.438-3.5312-18.97-4.91-28.87-15.59-42.32-29.12-16.9-17.76-46.08-21.5'+
+'7-68.06-28.63-24.05-6.09-34.58-28.72-53.19-43.18-20.829-3.21-13.094-7.69-9.9'+
+'38-20.1,17.428-40.913,25.978-70.408,42.628-111.59zm17.18,51.281c-13.162,11.0'+
+'99,0.41939,28.167,11.188,35.469,4.7792,13.422-11.969,27.862-15.219,42.875-8.'+
+'3459,10.131-0.81963,18.682,9.6875,22.719,7.9996-7.5324,15.19-27.881,22.562-3'+
+'9.25,5.2945-20.375,16.957-12.931,31.438-9.2812,19.37-15.69-5.25-26.791-17.06'+
+'-28.29-16.1-2.018-29.53-17.774-42.6-24.25zm3.0625,9.4062c1.8115-0.15889,5.01'+
+'61,3.0491,8.75,8.8438,12.924,14.21,29.838,12.978,46.531,19.125,7.6329,18.217'+
+'-18.294-2.7987-25.688,1.5938-7.0824,4.2082-16.776,31.188-25.094,47.875-0.770'+
+'11,7.0376-4.7276,4.6533-7.6875,4.75-0.8225-10.907,13.31-30.012,17.188-43.844'+
+',11.004-14.509-8.2277-19.095-14.906-29.531-1.1948-5.8977-0.69217-8.6723,0.90'+
+'625-8.8125zm78.32,28.684c-12.773,5.5717-18.832,31.363-27.406,43.844-1.1406,1'+
+'0.068-18.572,31.947-6.5312,35.5,14.736,17.906,23.121-28.881,25.281-11.344,2.'+
+'7794,12.25-2.1577,30.647,13.562,34.812,8.3959,9.5699,7.671-6.1812,8.5625-9.7'+
+'812,4.7811-15.134-12.296-38.143,5.9375-44.406,7.1719-4.3496,34.735-20.061,17'+
+'.125-26.25-10.935-13.624-17.389,7.2536-30.156,8.1875-1.2316-6.9671,13.832-26'+
+'.477-6.375-30.562zm0.84375,11.531c8.623,0.10423-3.1088,22.195-7.375,31.625,1'+
+'2.571-0.41291,31.77-21.399,37.469-14.594,1.9307,6.7028-18.7,12.392-26.906,18'+
+'.219-2.3889,13.262,2.7641,29.126,1.7188,44.5l1.4062,5.0312c-18.459-6.9376-1.'+
+'7272-30.394-16.156-42.875-10.217-3.4938-10.498,28.276-22,18.25,9.616-22.925,'+
+'18.237-37.783,29.844-59.875,0.76415-0.1986,1.4251-0.2882,2-0.28125z" fill-ru'+
+'le="nonzero" transform="translate(47.515522,-84.356662)" fill="currentColor"'+
+'/></g></svg>'+
+''
+);
+
 add_aliases(
+'1999 FORM Jacob Sherson\n'+
+'2002 FORM Nikolaj Thomas Zinner\n'+
+'2002 KASS Rasmus Villemoes\n'+
 '2003 CERM Sune S. Thomsen\n'+
 '2004 VC   Christina Koch Perry\n'+
-'2005 CERM path=/olesoee uid=598836823 Ole Søe Sørensen\n'+
+'2005 CERM Ole Søe Sørensen\n'+
 '2005 FORM Dan Beltoft\n'+
-'2005 KASS path=/tanja.kragbaek uid=538147907 Tanja Kragbæk\n'+
+'2005 KASS Tanja Kragbæk Vilhelmsen\n'+
 '2005 VC   Rasmus Ragnvald Olofsson\n'+
 '2006 CERM Tine Vraast-Thomsen\n'+
 '2006 FORM Michael Volf Henneberg\n'+
 '2006 KASS Lars Thorhauge\n'+
 '2006 NF   Aslak Thorndahl Lindballe\n'+
 '2006 PR   Mia Dyhr Christensen\n'+
-'2006 SEKR Lasse Vilhelmsen\n'+
+'2006 SEKR Lasse Kragbæk Vilhelmsen\n'+
 '2006 VC   Martin Studsgaard Christensen\n'+
-'2007 CERM path=/RandomSort uid=531349695 Johan Sigfred Abildskov\n'+
+'2007 CERM Johan Sigfred Abildskov\n'+
 '2007 FORM Jan Munksgård Baggesen\n'+
-'2007 KASS path=/mads.baggesen uid=567602916 Mads Baggesen\n'+
-'2007 NF   path=/eva.l.poulsen.3 uid=686826972 Eva Lykkegaard Poulsen\n'+
+'2007 KASS Mads Baggesen\n'+
+'2007 NF   Eva Lykkegaard Poulsen\n'+
 '2007 PR   Sidse Damgaard\n'+
-'2007 SEKR path=/ninni.schaldemose uid=587991416 Ninni Schaldemose\n'+
+'2007 SEKR Ninni Schaldemose\n'+
 '2007 VC   Kasper Søgaard Deleuran\n'+
-'2008 CERM path=/sofie.kastbjerg uid=560433273 Sofie Kastbjerg\n'+
+'2008 CERM Sofie Kastbjerg\n'+
 '2008 FORM Tue Christensen\n'+
-'2008 KASS path=/adam.e.n.thomsen uid=695940123 Adam Ehlers Nyholm Thomsen\n'+
-'2008 PR   path=/cecilie.vahlstrup uid=594898620 Cecilie Vahlstrup\n'+
+'2008 KASS Adam Ehlers Nyholm Thomsen\n'+
+'2008 PR   Cecilie Vahlstrup\n'+
 '2009 CERM Christian Bladt Brandt\n'+
 '2009 FORM Jonas Bæklund\n'+
-'2009 KASS path=/raagaard85 uid=548956219 Rikke Aagaard\n'+
+'2009 KASS Rikke Aagaard\n'+
 '2009 NF   Ditte Både Sandkamm\n'+
-'2009 PR   path=/nikolaj.t.andresen uid=1354073864 Nikolaj Andresen\n'+
+'2009 PR   Nikolaj Andresen\n'+
 '2009 SEKR Anne Clemmensen\n'+
-'2009 VC   path=/troels.hahn uid=1219988735 Troels Tinggaard Hahn\n'+
-'2010 FORM path=/mie.birkbak uid=716882878 Mie Elholm Birkbak\n'+
-'2010 KASS path=/muldvang uid=831299266 Torben Muldvang Andersen\n'+
-'2010 NF   path=/m261087 uid=523573715 Morten Jensen\n'+
-'2010 PR   path=/kwinge uid=652817831 Kristoffer L. Winge\n'+
-'2010 SEKR path=/maria.kragelund.5 uid=741254142 Maria Kragelund\n'+
+'2009 VC   Troels Tinggaard Hahn\n'+
+'2010 FORM Mie Elholm Birkbak\n'+
+'2010 KASS Torben Muldvang Andersen\n'+
+'2010 NF   Morten Jensen\n'+
+'2010 PR   Kristoffer L. Winge\n'+
+'2010 PR   Kristoffer Winge\n'+
+'2010 PR   Kristoffer Larsen Winge\n'+
+'2010 SEKR Maria Kragelund\n'+
 '2010 VC   Morten Rasmussen\n'+
-'2011 CERM path=/SabrinaTangChristensen uid=647752303 Sabrina Tang Christensen\n'+
-'2011 FORM path=/schultznielsen uid=1350090406 Jakob Schultz-Nielsen\n'+
-'2011 KASS path=/fredsgaard uid=657982935 Britt Fredsgaard\n'+
-'2011 NF   path=/kaspermonrad9 uid=799570537 Kasper Monrad\n'+
-'2011 PR   path=/makirr uid=708428917 Marie Kirkegaard\n'+
-'2011 SEKR path=/profile.php?id=508599429 uid=508599429 Niels Ramskov Bøje\n'+
-'2011 VC   path=/maiken.h.hansen.5 uid=1102944964 Maiken Haahr Hansen\n'+
-'2012 CERM path=/madsf uid=586671237 Mads Fabricius\n'+
-'2012 FORM path=/spet.dk uid=749846857 Steffen Videbæk Petersen\n'+
-'2012 KASS path=/gjaldbxk uid=1089742998 Eva Gjaldbæk Frandsen\n'+
-'2012 NF   path=/johannes.christensen.775 uid=541510274 Johannes Christensen\n'+
-'2012 PR   path=/nana.halle uid=652704298 Nana Halle\n'+
-'2012 SEKR path=/jakob.moss uid=1435654155 Jakob Rørsted Mosumgaard\n'+
-'2012 VC   path=/peter.slemmingadamsen uid=703621268 Peter Slemming-Adamsen\n'+
-'2005 FUJA path=/jane.drejer uid=1199803462 Jane Drejer\n'+
+'2011 CERM Sabrina Tang Christensen\n'+
+'2011 FORM Jakob Schultz-Nielsen\n'+
+'2011 KASS Britt Videbæk Fredsgaard\n'+
+'2011 NF   Kasper Monrad\n'+
+'2011 PR   Marie Kirkegaard\n'+
+'2011 SEKR Niels Ramskov Bøje\n'+
+'2011 VC   Maiken Haahr Hansen\n'+
+'2012 CERM Mads Fabricius\n'+
+'2012 FORM Steffen Videbæk Fredsgaard\n'+
+'2012 KASS Eva Gjaldbæk Frandsen\n'+
+'2012 NF   Johannes Christensen\n'+
+'2012 PR   Nana Halle\n'+
+'2012 SEKR Jakob Rørsted Mosumgaard\n'+
+'2012 VC   Peter Slemming-Adamsen\n'+
+'2013 CERM Diana Christensen\n'+
+'2013 FORM Mathias Rav\n'+
+'2013 KASS Christina Moeslund\n'+
+'2013 NF   Christian Fretté\n'+
+'2013 PR   Mette Lysgaard Schulz\n'+
+'2013 SEKR Karina Sunds Nielsen\n'+
+'2013 VC   Mathias Dannesbo\n'+
+'2014 CERM Jonas Kielsholm\n'+
+'2014 FORM Martin Sand\n'+
+'2014 INKA Henrik Lund Mortensen\n'+
+'2014 KASS Mathias Jaquet Mavraganis\n'+
+'2014 NF   Jacob Schnedler\n'+
+'2014 PR   Alexandra Fabricius Porsgaard\n'+
+'2014 SEKR Camilla Pedersen\n'+
+'2014 VC   Peter Matzen\n'+
+'2015 CERM Andreas Bock Michelsen\n'+
+'2015 FORM Christian Bonar Zeuthen\n'+
+'2015 INKA Oliver Emil Harritslev Christensen\n'+
+'2015 KASS Amalie Louise Stokholm\n'+
+'2015 NF   Anne Dorte Rafn Spangsberg\n'+
+'2015 PR   Liv Medum Bundgaard\n'+
+'2015 SEKR Janne Højmark Mønster\n'+
+'2015 VC   Lone Koed\n'+
+'2015 VC   Lone Koed Nielsen\n'+
+'2005 FUJA Jane Drejer\n'+
 '2006 FUZA Sarah Zakarias\n'+
-'2007 FUAN path=/k.seidenfaden uid=756134409 Kenneth Sejdenfaden Bøgh\n'+
+'2007 FUAN Kenneth Sejdenfaden Bøgh\n'+
 '2007 FUHO Daniel Dalhoff Hviid\n'+
-'2007 FUME path=/mette.aagaard2 uid=759207466 Mette Aagaard\n'+
+'2007 FUME Mette Aagaard\n'+
 '2008 FUAN Andreas Sand Gregersen\n'+
-'2008 FUNÉ path=/southgaard uid=654401669 René Søndergaard\n'+
-'2008 FURU path=/jesper.unna uid=574450803 Jesper Unna\n'+
+'2008 FUNÉ René Søndergaard\n'+
+'2008 FURU Jesper Unna\n'+
+'2009 FUBR Rune Bjerring Haugaard\n'+
 '2009 FUBS Sandra Pedersen\n'+
-'2009 FUHN path=/mette.hansen.18294053 uid=800457327 Mette Hansen\n'+
-'2009 FUXA path=/christianxafrette uid=1177474542 Christian Fretté\n'+
-'2009 FUØL path=/c.kjeldahl uid=560527546 Carina Kjeldahl Møller\n'+
+'2009 FUBS Sandra Bleuenn Picard Svejgaard Pedersen\n'+
+'2009 FUBS Sandra Bleuenn Picard S. Pedersen\n'+
+'2009 FUHN Mette Hansen\n'+
+'2009 FUØL Carina Kjeldahl Møller\n'+
 '2009 FUØR Signe Grønborg\n'+
-'2010 FUAN path=/andreas.bovin uid=864545226 Andreas Nikolai Kyed Bovin\n'+
-'2010 FUNI path=/asbjorn.stensgaard uid=549810568 Asbjørn Stensgaard\n'+
+'2010 FUAN Andreas Nikolai Kyed Bovin\n'+
+'2010 FUNI Asbjørn Stensgaard\n'+
 '2010 FUPH Pernille Hornemann Jensen\n'+
-'2010 FURØ path=/reinholdt uid=1145576654 Lærke Rønlev Reinholdt\n'+
-'2010 FUUL path=/camilla.pedersen.90834 uid=740348390 Camilla Pedersen\n'+
-'2011 FUFR path=/andersfriis.jensen uid=100000345142992 Anders Friis Jensen\n'+
-'2011 FUHR path=/christina.moeslund uid=823542341 Christina Moeslund\n'+
-'2011 FUIØ path=/mathilde.b.m uid=1050345519 Mathilde Biørn Madsen\n'+
+'2010 FURØ Lærke Rønlev Reinholdt\n'+
+'2011 FUFR Anders Friis Jensen\n'+
+'2011 FUIØ Mathilde Biørn Madsen\n'+
 '2011 FULA Camilla Skree Sørensen\n'+
-'2011 FUNU path=/andreas.nuppenau uid=657398674 Andreas Bendix Nuppenau\n'+
-'2011 FURI path=/frederik.jerloev uid=100001979280329 Frederik Jerløv\n'+
-'2011 FURT path=/martin.sand.nielsen uid=1132332599 Martin Sand\n'+
-'2012 FUAN path=/Henrik.lm uid=1246852882 Henrik Lund Mortensen\n'+
-'2012 FUCO path=/schnedler1 uid=1163223380 Jacob Schnedler\n'+
-'2012 FUHI path=/neicdk uid=1310435216 Mathias Dannesbo\n'+
-'2012 FULI path=/line.sorensen.7 uid=766806584 Line Bjerg Sørensen\n'+
-'2012 FULO path=/lone.koed uid=1230718429 Lone Koed\n'+
-'2012 FULS path=/sara.poulsen.370 uid=610248111 Sara Poulsen\n'+
-'2012 FUMO path=/marianne.o.mortensen uid=536489723 Marianne Ostenfeldt Mortensen\n'+
-'2012 FUMY path=/rasmus.thygesen1 uid=100001806380614 Rasmus Thygesen\n'+
-'2012 FUNA path=/karina.s.nielsen.9 uid=1579573485 Karina Sunds Nielsen\n'+
-'2012 FUZU path=/TheZeuthen uid=1200968796 Christian Bonar Zeuthen\n'+
-'"ADAM"           path=/adam.etches.1 uid=1157687529 Adam Etches\n'+
-'"Nissen"         path=/andersnissen uid=619069458 Anders Hauge Nissen\n'+
-'"Metal Bo"       Bo Mortensen\n'+
-'"CBM"            path=/cbmoller uid=1388593466 Christian Brandt Møller\n'+
-'"J-DAG"          path=/jacobdamgaardjensen uid=818434640 Jacob Damgaard Jensen\n'+
-'"Jen_s"          Jens Kusk Block\n'+
-'"EFUIT"          path=/laugehoyer uid=788319674 Lauge Mølgaard Hoyer\n'+
-'"Have"           Martin Anker Have\n'+
-'"Mavraganis"     path=/RastaRamses uid=698805277 Mathias Jaquet Mavraganis\n'+
-'"Rav"            path=/mathiasrav uid=825874205 Mathias Rav\n'+
-'"Metten"         path=/mette.schulz uid=664978994 Mette Lysgaard Schulz\n'+
-'"Vester"         path=/mvester uid=571233959 Mikkel Bak Vester\n'+
-'"M3"             path=/morten.schaumburg uid=601679753 Morten Schaumburg\n'+
-'"Cramer"         path=/cramer86 uid=1043318079 Morten \'Cramer\' Nikolaj Pløger\n'+
-'"#"              Rikke Hein\n'+
-'"Sean"           path=/sean.geggie uid=1601624394 Sean Geggie\n'+
-'"Køleren"        Karsten Handrup\n'+
-'"P∀"             Palle Jørgensen\n'+
-'"Thyregod"       Klaus Eriksen\n'+
-'"Graa mand"      path=/per.graa uid=606838463 Per Graa\n'+
-'"Łabich"         Anders Labich\n'+
-'"Onklen"         Henrik Bindesbøll Nørregaard\n'+
-'"Clausen"        Jakob Clausen\n'+
+'2011 FUNU Andreas Bendix Nuppenau\n'+
+'2011 FURI Frederik Jerløv\n'+
+'2012 FULI Line Bjerg Sørensen\n'+
+'2012 FULS Sara Poulsen\n'+
+'2012 FUMO Marianne Ostenfeldt Mortensen\n'+
+'2012 FUMY Rasmus Thygesen\n'+
+'2013 FUAN Dennis Krongaard Mikkelsen\n'+
+'2013 FUBI Benedikte Sofie Werk\n'+
+'2013 FUGR Asger Agergaard\n'+
+'2013 FUSE Mie Christine Wilhelmsen\n'+
+'2013 FUTN Anja T Nielsen\n'+
+'2013 FUUS Rasmus Korsgaard Kjeldgaard\n'+
+'2014 FUAT Anne Kristine Tarp\n'+
+'2014 FUAT Anne Tarp\n'+
+'2014 FUIS Astrid Christiansen\n'+
+'2014 FUIK Frederik Riis Nielsen\n'+
+'2014 FUFF Helle Weinkouff Petersen\n'+
+'2014 FUAN Isaac Appelqvist Løge\n'+
+'2014 FUAN Isaac Appelquist Løge\n'+
+'2014 FUON Jonas Joachim Junker Zarling\n'+
+'2014 FUON Jonas Zarling\n'+
+'2014 FUSØ Søren Kenneth Højgaard Sørensen\n'+
+'2014 FUWI William Heyman Krill\n'+
+'2014 FUWI William Heyman\n'+
+'2015 FUAK	Martin Aakjær Jørgensen\n'+
+'2015 FUAN	Per Næsby Høgfeldt\n'+
+'2015 FUGL	Katrine Alice Glasscock\n'+
+'2015 FUGO	Asger Roed-Åstrøm\n'+
+'2015 FUIL	Sille Eline Piilgard Andersen\n'+
+'2015 FUNN	Anna Mie Hansen\n'+
+'2015 FUPI	Freja Frederikke Pinderup\n'+
+'2015 FUSJ	Kirstine Friis Jensen\n'+
+'2015 FUTØ	Marcus Høgsholt Nilson\n'+
+'2015 FUVE	Thomas Skovlund Hansen\n'+
+'"ADAM"       Adam Etches\n'+
+'"Nissen"     Anders Hauge Nissen\n'+
+'"Metal Bo"   Bo Mortensen\n'+
+'"CBM"        Christian Brandt Møller\n'+
+'"J-DAG"      Jacob Damgaard Jensen\n'+
+'"Jen_s"      Jens Kusk Block\n'+
+'"EFUIT"      Philip Tchernavskij\n'+
+'"GEFUIT"     Lauge Mølgaard Hoyer\n'+
+'"Have"       Martin Anker Have\n'+
+'"Vester"     Mikkel Bak Vester\n'+
+'"M3"         Morten Schaumburg\n'+
+'"Cramer"     Morten \'Cramer\' Nikolaj Pløger\n'+
+'"#"          Rikke Hein\n'+
+'"Sean"       Sean Geggie\n'+
+'"Køleren"    Karsten Handrup\n'+
+'"P∀"         Palle Jørgensen\n'+
+'"Thyregod"   Klaus Eriksen\n'+
+'"Graa mand"  Per Graa\n'+
+'"Łabich"     Anders Labich\n'+
+'"Onklen"     Henrik Bindesbøll Nørregaard\n'+
+'"Clausen"    Jakob Clausen\n'+
 '"Dobbelt Wester" Michael Westergaard\n'+
-'"Brøl"           Morten Grud Rasmussen\n'+
-'"Stive-Anna"     Anna Sejersen Riis\n'+
+'"Brøl"       Morten Grud Rasmussen\n'+
+'"Stive-Anna" Anna Sejersen Riis\n'+
+'"Ålen"       Frederik Brinck Truelsen\n'+
 ''
 );
+
+activate_fbtk();
